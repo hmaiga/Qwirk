@@ -1,0 +1,44 @@
+{
+  "soc-storage": {
+    "mongodb": {
+      "database": "soc-db",
+      "hosts": [
+        {
+          "host": "127.0.0.1",
+          "port": 27017
+        }
+      ]
+    }
+  },
+  "soc-ihm": {
+    "domain-name": "http://localhost:3000"
+  },
+  "soc-api": {
+    "host": "localhost",
+    "bind": "0.0.0.0",
+    "port": 8000,
+    "cors": {
+      "origin": ["http://localhost:3000"]
+    },
+    "admins": [
+      {
+        "email": "ervin.vildeman@gmail.com",
+        "username": "ervin",
+        "firstName": "Ervin",
+        "lastName": "VILDEMAN",
+        "isAdmin": true
+      }
+    ],
+    "smtp-auth": {
+      "pool": true,
+      "host": "smtp.gmail.com",
+      "port": 465,
+      "secure": true,
+      "auth": {
+        "user": "samtransworder@gmail.com",
+        "pass": "Supinfo01!"
+      }
+    },
+    "mailer": "samtransworder@gmail.com"
+  }
+}
