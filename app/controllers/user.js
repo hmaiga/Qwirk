@@ -56,6 +56,26 @@ var userController = {
                 return callback(null, deletedUser)
             }
         })
+    },
+
+    findUserByEmailAndPassword: function (params, callback) {
+        return userModel.findOne({email : params.email, password : params.password}, function onGetUserByEmailAndPassword(err, user) {
+            if (err) return callback(err)
+            if (!user) return callback("Aucun utilisateur n'a été trouvé")
+            else {
+                return callback(null, user);
+            }
+        })
+    },
+
+    findUserByUsernameAndPassword: function (params, callback) {
+        return userModel.findOne({username : params.username, password : params.password}, function onGetUserByUsernameAndPassword(err, user) {
+            if (err) return callback(err)
+            if (!user) return callback("Aucun utilisateur n'a été trouvé")
+            else {
+                return callback(null, user);
+            }
+        })
     }
 }
 
