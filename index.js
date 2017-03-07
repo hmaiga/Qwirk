@@ -5,6 +5,7 @@ var http = require('http');
 var express = require('express');
 var session = require('express-session');
 var router = express.Router();
+var cors = require('cors');
 var mongoose = require('mongoose');
 var winston = require('winston');
 var debug = require('debug')('app');
@@ -25,6 +26,21 @@ var sessionStore = new MongoStore({
     url: configDB.uri,
     collection: 'sessions'
 });
+
+//app.user(bodyParser.json());
+// after the code that uses bodyParser and other cool stuff
+var originsWhitelist = [
+    'http://localhost:8000',      //this is my front-end url for development
+
+    'http://www.myproductionurl.com'
+];
+var corsOptions = {
+    origin: function(origin, callback){
+        var isWhitelisted = originsWhitelist.indexOf(origin) !== -1;
+        callback(null, isWhitelisted);
+    },
+    credentials:true
+}
 
 mongoose.connect(configDB.uri, configDB.options);
 
@@ -49,6 +65,7 @@ initRouters.status(router);
 initRouters.typeMessage(router);
 
 var server = http.createServer(app);
+app.use(cors(corsOptions));
 app.use(function setResponseHeader(req, res, next){
     res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
     res.header('Expires', '-1');

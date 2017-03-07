@@ -4,6 +4,8 @@
 var mongoose = require('mongoose');
 var validate = require('mongoose-validator');
 var bcrypt = require('bcrypt-nodejs');
+let helper = require('./../helpers/helper');
+
 var Schema = mongoose.Schema;
 var SALT_WORK_FACTOR = 10;
 
@@ -62,15 +64,10 @@ userSchema.pre('save', function onSave(next){
     var user = this;
     if(user.isModified('password') || user.isNew){
         //sinon on hash
-        bcrypt.genSalt(SALT_WORK_FACTOR, function onGenSalt(err, salt){
-            if(err) return next(err);
-            //On hash avec le salt
-            bcrypt.hash(user.password, salt, null, function onHashed(err, hash){
-                if(err) return next(err);
-                user.password = hash;
-                next();
-            });
-        });
+        console.log("test" + user.password)
+        user.password = helper.hashPassword(user.password, next);
+        console.log("toto" + helper.hashPassword(user.password, next))
+        next();
     }
     else{
         return next();
