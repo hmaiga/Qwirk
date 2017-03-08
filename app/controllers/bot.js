@@ -25,13 +25,15 @@ var botController = {
     },
 
     updateBot: function updateBot(params, callback) {
-        botModel.findOne({id : params.id}, function(err, botFound) {
+        botModel.findOne({_id : params._id}, function(err, botFound) {
             if (err) return callback(err)
             if (!botFound) return callback("Aucun groupe n'a été trouvé")
             else {
-                for(var key in botFound) {
-                    if (key === 'id') {continue;}
-                    botFound[key] = params[key];
+                for(var key in params) {
+                    if (key === '_id') {continue;}
+                    if (botFound[key]) {
+                        botFound[key] = params[key];
+                    }
                 }
 
                 return botFound.save(function onSaveUpdateBot(err, savedBot) {

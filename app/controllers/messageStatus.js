@@ -24,13 +24,15 @@ var messageStatusController = {
     },
 
     updateMessageStatus: function updateMessageStatus(params, callback) {
-        messageStatusModel.findOne({id : params.id}, function(err, messageStatusFound) {
+        messageStatusModel.findOne({_id : params._id}, function(err, messageStatusFound) {
             if (err) return callback(err)
             if (!messageStatusFound) return callback("Aucun status de message n'a été trouvé")
             else {
-                for(var key in messageStatusFound) {
-                    if (key === 'id') {continue;}
-                    messageStatusFound[key] = params[key];
+                for(var key in params) {
+                    if (key === '_id') {continue;}
+                    if (messageStatusFound[key]) {
+                        messageStatusFound[key] = params[key];
+                    }
                 }
 
                 return messageStatusFound.save(function onSaveUpdateMessageStatus(err, updatedMessageStatus) {
