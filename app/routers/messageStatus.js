@@ -6,7 +6,7 @@ var messageStatusController = require('./../controllers').messageStatus
 var messageStatusRouters = function messageStatusRouters(router) {
     router.route('/messageStatuses')
         .get(function(req, res) {
-            params = req.query.filter ? JSON.parse(req.query.filter) : {}
+            params = req.query ? req.query : {}
             return messageStatusController.getMessageStatuses(params, function(err, messageStatuses) {
                 if (err) return res.status(500).send(err)
                 else {

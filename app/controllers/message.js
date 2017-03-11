@@ -24,13 +24,15 @@ var messageController = {
     },
 
     updateMessage: function updateMessage(params, callback) {
-        messageModel.findOne({id : params.id}, function(err, messageFound) {
+        messageModel.findOne({_id : params._id}, function(err, messageFound) {
             if (err) return callback(err)
             if (!messageFound) return callback("Aucun message n'a été trouvé")
             else {
-                for(var key in messageFound) {
-                    if (key === 'id') {continue;}
-                    messageFound[key] = params[key];
+                for(var key in params) {
+                    if (key === '_id') {continue;}
+                    if (messageFound[key]) {
+                        messageFound[key] = params[key];
+                    }
                 }
 
                 return messageFound.save(function onSaveUpdateMessage(err, updatedMessage) {

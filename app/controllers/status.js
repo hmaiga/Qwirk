@@ -24,13 +24,15 @@ var statusController = {
     },
 
     updateStatus: function updateStatus(params, callback) {
-        statusModel.findOne({id : params.id}, function(err, statusFound) {
+        statusModel.findOne({_id : params._id}, function(err, statusFound) {
             if (err) return callback(err)
             if (!statusFound) return callback("Aucun status n'a été trouvé")
             else {
-                for(var key in statusFound) {
-                    if (key === 'id') {continue;}
-                    statusFound[key] = params[key];
+                for(var key in params) {
+                    if (key === '_id') {continue;}
+                    if (statusFound[key]) {
+                        statusFound[key] = params[key];
+                    }
                 }
 
                 return statusFound.save(function onSaveUpdateStatus(err, updatedStatus) {

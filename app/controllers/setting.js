@@ -24,13 +24,15 @@ var settingController = {
     },
 
     updateSetting: function updateSetting(params, callback) {
-        settingModel.findOne({id : params.id}, function(err, settingFound) {
+        settingModel.findOne({_id : params._id}, function(err, settingFound) {
             if (err) return callback(err)
             if (!settingFound) return callback("Aucun paramètre n'a été trouvé")
             else {
-                for(var key in settingFound) {
-                    if (key === 'id') {continue;}
-                    settingFound[key] = params[key];
+                for(var key in params) {
+                    if (key === '_id') {continue;}
+                    if (settingFound[key]) {
+                        settingFound[key] = params[key];
+                    }
                 }
 
                 return settingFound.save(function onSaveUpdateSetting(err, updatedSetting) {

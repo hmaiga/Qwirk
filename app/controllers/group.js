@@ -38,13 +38,15 @@ var groupController = {
     
     updateGroup: function updateGroup(params, callback) {
         //params = { id: '123', name: 'nouveaunom', description: 'nouvelledescription' }
-        groupModel.findOne({id : params.id}, function(err, groupFound) {
+        groupModel.findOne({_id : params._id}, function(err, groupFound) {
             if (err) return callback(err)
             if (!groupFound) return callback("Aucun groupe n'a été trouvé")
             else {
-                for(var key in groupFound) {
-                    if (key === 'id') {continue;}
-                    groupFound[key] = params[key];
+                for(var key in params) {
+                    if (key === '_id') {continue;}
+                    if (groupFound[key]) {
+                        groupFound[key] = params[key];
+                    }
                 }
 
                 return groupFound.save(function onSaveUpdateGroup(err, updatedGroup) {

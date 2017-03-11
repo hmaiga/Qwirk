@@ -46,6 +46,7 @@ var userSchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: 'Status'
         },
+        profilePicture: Buffer,
         setting: {
             type: Schema.Types.ObjectId,
             ref: 'Setting'
