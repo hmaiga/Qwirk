@@ -29,15 +29,17 @@ var userController = {
     },
 
     updateUser: function updateUser(params, callback) {
-        userModel.findOne({id : params.id}, function(err, userFound) {
+        userModel.findOne({_id : params._id}, function(err, userFound) {
             if (err) return callback(err)
             if (!userFound) return callback("Aucun utilisateur n'a été trouvé")
             else {
-                for(var key in userFound) {
-                    if (key === 'id') {continue;}
-                    userFound[key] = params[key];
+                for(var key in params) {
+                    if (key === '_id') {continue;}
+                    console.log(key)
+                    if (userFound[key]) {
+                        userFound[key] = params[key];
+                    }
                 }
-
                 return userFound.save(function onSaveUpdateUser(err, user) {
                     if (err) callback(err)
                     else {

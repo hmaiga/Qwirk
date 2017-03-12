@@ -24,13 +24,15 @@ var moderatorController = {
     },
 
     updateModerator: function updateModerator(params, callback) {
-        moderatorModel.findOne({id : params.id}, function(err, moderatorFound) {
+        moderatorModel.findOne({_id : params._id}, function(err, moderatorFound) {
             if (err) return callback(err)
             if (!moderatorFound) return callback("Aucun modérateur n'a été trouvé")
             else {
-                for(var key in moderatorFound) {
-                    if (key === 'id') {continue;}
-                    moderatorFound[key] = params[key];
+                for(var key in params) {
+                    if (key === '_id') {continue;}
+                    if (moderatorFound[key]) {
+                        moderatorFound[key] = params[key];
+                    }
                 }
 
                 return moderatorFound.save(function onSaveUpdateModerator(err, updatedModerator) {

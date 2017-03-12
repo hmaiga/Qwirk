@@ -24,13 +24,15 @@ var typeMessageController = {
     },
 
     updateTypeMessage: function updateTypeMessage(params, callback) {
-        typeMessageModel.findOne({id : params.id}, function(err, typeMessageFound) {
+        typeMessageModel.findOne({_id : params._id}, function(err, typeMessageFound) {
             if (err) return callback(err)
             if (!typeMessageFound) return callback("Aucun type de message n'a été trouvé")
             else {
-                for(var key in typeMessageFound) {
-                    if (key === 'id') {continue;}
-                    typeMessageFound[key] = params[key];
+                for(var key in params) {
+                    if (key === '_id') {continue;}
+                    if (typeMessageFound[key]) {
+                        typeMessageFound[key] = params[key];
+                    }
                 }
 
                 return typeMessageFound.save(function onSaveUpdateTypeMessage(err, updatedTypeMessage) {
