@@ -5,6 +5,7 @@ var http = require('http');
 var express = require('express');
 var session = require('express-session');
 var router = express.Router();
+var cors = require('cors');
 var mongoose = require('mongoose');
 var winston = require('winston');
 var debug = require('debug')('app');
@@ -49,6 +50,7 @@ initRouters.status(router);
 initRouters.typeMessage(router);
 
 var server = http.createServer(app);
+app.use(cors());
 app.use(function setResponseHeader(req, res, next){
     res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
     res.header('Expires', '-1');
