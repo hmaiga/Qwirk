@@ -4,7 +4,11 @@
 var mongoose = require('mongoose');
 var validate = require('mongoose-validator');
 var bcrypt = require('bcrypt-nodejs');
+var crypto = require('crypto');
+var jwt = require('jsonwebtoken');
+
 let helper = require('./../helpers/helper');
+let PARAM = require('./../../config/config');
 
 var Schema = mongoose.Schema;
 var SALT_WORK_FACTOR = 10;
@@ -18,18 +22,31 @@ var SALT_WORK_FACTOR = 10;
 
 var userSchema = new Schema(
     {
-        firstName: String,
-        lastName: String,
+        firstName: {
+            type: String,
+            required: true
+        },
+        lastName: {
+            type: String,
+            required: true
+        },
         email: {
-            type: String
+            type: String,
+            unique: true,
+            required: true
             //validate: emailValidator
         },
         username: {
-            type: String
+            type: String,
+            unique: true,
+            required: true
         },
         password: {
-            type: String
+            type: String,
+            required: true
         },
+        hash: String,
+        salt: String,
         groups: [{
             type: Schema.Types.ObjectId,
             ref: 'Group'
@@ -53,6 +70,28 @@ var userSchema = new Schema(
         },
         isModerator : Boolean
     }, {timestamps: true} );
+
+userSchema.methods.setPassword = function(password){
+    this.salt = crypto.randomBytes(16).toString('hex');
+    this.hash = crypto.pbkdf2Sync(password, this.salt, 1000, 64).toString('hex');
+};
+
+userSchema.methods.validPassword = function(password) {
+    var hash = crypto.pbkdf2Sync(password, this.salt, 1000, 64).toString('hex');
+    return this.hash === hash;
+};
+
+userSchema.methods.generateJwt = function() {
+    var expiry = new Date();
+    expiry.setDate(expiry.getDate() + 7);
+
+    return jwt.sign({
+        _id: this._id,
+        email: this.email,
+        name: this.name,
+        exp: parseInt(expiry.getTime() / 1000),
+    }, PARAM.secret );
+};
 
 userSchema.methods.isRealPassword = function isRealPassword(passwordToCompare, callback){
     return bcrypt.compare(passwordToCompare, this.password, function onCompare(err, isMatch){
