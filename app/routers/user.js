@@ -1,9 +1,11 @@
 /**
  * Created by TBS on 21/02/2017.
  */
-let helper = require('./../helpers/helper');
+
+var passport = require('passport');
 
 var userController = require('./../controllers').user;
+var authenticationController = require('./../controllers').authentication;
 
 var userRouters = function userRouters(router) {
     router.route('/users')
@@ -50,35 +52,24 @@ var userRouters = function userRouters(router) {
                 }
             })
         });
-    router.param('userIdentifier', function (req, res, next, userIdentifier) {
-        next();
-    });
-    router.param('password', function (req, res, next, password) {
-        next();
-    });
-    router.route('/user/:userIdentifier/:password')
-        .get(function (req, res) {
-            let userIdentifier = req.params.userIdentifier;
-            let params = { password : req.params.password };
-            if (helper.validateEmail(userIdentifier)) {
-                params["email"] = userIdentifier;
-                return userController.findUserByEmailAndPassword(params, function (err, user) {
-                    if (err) return res.status(500).send(err)
-                    else {
-                        res.status(200).send(user);
-                    }
-                });
-            }
-            else {
-                params["username"] = userIdentifier;
-                return userController.findUserByUsernameAndPassword(params, function (err, user) {
-                    if (err) return res.status(500).send(err)
-                    else {
-                        res.status(200).send(user);
-                    }
-                });
-            }
-        })
-}
+    router.route('/user')
+        .post(function(req, res) {
+            return userController.findUserByUserIdentifierAndPassword(params, function (err, user) {
+                if (err) return res.status(500).send(err)
+                else {
+                    res.status(200).send(user);
+                }
+            });
+        });
+    router.route('/login')
+        .post(function(req, res) {
+            return authenticationController.login(req, res);
+        });
+
+    router.route('/register')
+        .post(function (req, res) {
+            return authenticationController.register(req, res);
+        });
+};
 
 module.exports = userRouters;

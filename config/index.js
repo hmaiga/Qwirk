@@ -3,5 +3,6 @@
  */
 module.exports = {
     infra : require("./infra"),
+    secret : require('./secret'),
     database : require("./database")
 }
