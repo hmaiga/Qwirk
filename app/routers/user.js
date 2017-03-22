@@ -1,12 +1,16 @@
 /**
  * Created by TBS on 21/02/2017.
  */
-var userController = require('./../controllers').user
+
+var passport = require('passport');
+
+var userController = require('./../controllers').user;
+var authenticationController = require('./../controllers').authentication;
 
 var userRouters = function userRouters(router) {
     router.route('/users')
         .get(function(req, res) {
-            params = req.query ? req.query : {}
+            params = req.query.filter ? JSON.parse(req.query.filter) : {};
             return userController.getUsers(params, function(err, users) {
                 if (err) return res.status(500).send(err)
                 else {
@@ -16,15 +20,15 @@ var userRouters = function userRouters(router) {
         })
 
         .post(function(req, res) {
-            console.log(req.body)
+            console.log(req.body);
             return userController.addUser(req.body, function(err, newUser) {
-                console.log("AAAA")
+                console.log("AAAA");
                 if (err) {
-                    console.log("ERRRR")
+                    console.log("ERRRR");
                     return res.status(500).send(err);
                 }
                 else {
-                    console.log("success")
+                    console.log("success");
                     res.status(200).send(newUser);
                 }
             })
@@ -44,10 +48,28 @@ var userRouters = function userRouters(router) {
             return userController.removeUser(req, function(err, users) {
                 if (err) return res.status(500).send(err)
                 else {
-                    res.status(200).send(users)
+                    res.status(200).send(users);
                 }
             })
-        })
-}
+        });
+    router.route('/user')
+        .post(function(req, res) {
+            return userController.findUserByUserIdentifierAndPassword(params, function (err, user) {
+                if (err) return res.status(500).send(err)
+                else {
+                    res.status(200).send(user);
+                }
+            });
+        });
+    router.route('/login')
+        .post(function(req, res) {
+            return authenticationController.login(req, res);
+        });
+
+    router.route('/register')
+        .post(function (req, res) {
+            return authenticationController.register(req, res);
+        });
+};
 
 module.exports = userRouters;

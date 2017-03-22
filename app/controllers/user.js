@@ -1,6 +1,8 @@
 /**
  * Created by TBS on 26/02/2017.
  */
+let helper = require('./../helpers/helper');
+
 var userModel = require('./../models').user
 
 var userController = {
@@ -58,6 +60,47 @@ var userController = {
                 return callback(null, deletedUser)
             }
         })
+    },
+    /*
+    findUserByEmailAndPassword: function (params, callback) {
+        return userModel.findOne({email : params.email, password : params.password}, function onGetUserByEmailAndPassword(err, user) {
+            if (err) return callback(err)
+            if (!user) return callback("Aucun utilisateur n'a été trouvé")
+            else {
+                return callback(null, user);
+            }
+        })
+    },*/
+
+    findUserByUserIdentifierAndPassword: function (params, callback) {
+        if (helper.validateEmail(params.userIdentifier)) {
+            return userModel.findOne({
+                email: params.userIdentifier
+            }, function onGetUserByEmailAndPassword(err, user) {
+                if (err) return callback(err);
+                if (!user) return callback("Aucun utilisateur n'a été trouvé")
+                else {
+                    if(user.password !== params.password) {
+                        return callback("E-mail and password not match")
+                    }
+                    return callback(null, user);
+                }
+            })
+        }
+        else {
+            return userModel.findOne({
+                username: params.userIdentifier
+            }, function onGetUserByUsernameAndPassword(err, user) {
+                if (err) return callback(err);
+                if (!user) return callback("Aucun utilisateur n'a été trouvé")
+                else {
+                    if(user.password !== params.password) {
+                        return callback("Username and password not match")
+                    }
+                    return callback(null, user);
+                }
+            })
+        }
     }
 }
 
