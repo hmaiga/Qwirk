@@ -21,6 +21,8 @@ class authentication {
         user.status = req.body.status || null;
         user.settings = req.body.settings || [];
         user.isModerator = req.body.isModerator || false;
+        user.resetPasswordExpires = null;
+        user.resetPasswordToken = null;
         user.save(function(err) {
             let token;
             if (err) {

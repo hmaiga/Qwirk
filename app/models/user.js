@@ -24,27 +24,29 @@ var userSchema = new Schema(
     {
         firstName: {
             type: String,
-            required: true
+            //required: true
         },
         lastName: {
             type: String,
-            required: true
+            //required: true
         },
         email: {
             type: String,
-            unique: true,
-            required: true
+            //unique: true,
+            //required: true
             //validate: emailValidator
         },
         username: {
             type: String,
-            unique: true,
-            required: true
+            //unique: true,
+            //required: true
         },
         password: {
             type: String,
-            required: true
+            //required: true
         },
+        resetPasswordToken: String,
+        resetPasswordExpires: Date,
         hash: String,
         salt: String,
         groups: [{

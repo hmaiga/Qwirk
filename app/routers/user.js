@@ -2,12 +2,13 @@
  * Created by TBS on 21/02/2017.
  */
 
-var passport = require('passport');
+let passport = require('passport');
 
-var userController = require('./../controllers').user;
-var authenticationController = require('./../controllers').authentication;
+let userController = require('./../controllers').user;
+let authenticationController = require('./../controllers').authentication;
+let restorePassController = require('./../controllers').restorePass;
 
-var userRouters = function userRouters(router) {
+let userRouters = function userRouters(router) {
     router.route('/users')
         .get(function(req, res) {
             params = req.query.filter ? JSON.parse(req.query.filter) : {};
@@ -69,6 +70,15 @@ var userRouters = function userRouters(router) {
     router.route('/register')
         .post(function (req, res) {
             return authenticationController.register(req, res);
+        });
+    
+    router.route('/forgot')
+        .post(function (req, res, next) {
+            return restorePassController.forgot(req, res, next);
+        });
+    router.route('/reset/:token')
+        .post(function (req, res) {
+            return restorePassController.forgot(req, res);
         });
 };
 
