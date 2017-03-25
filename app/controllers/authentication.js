@@ -3,6 +3,8 @@
  */
 let passport = require('passport');
 let mongoose = require('mongoose');
+let fs = require('fs');
+let mime = require('mime');
 let User = mongoose.model('User');
 
 let logger = require("./../helpers/logger");
@@ -10,6 +12,8 @@ let logger = require("./../helpers/logger");
 class authentication {
     static register (req, res) {
         let user = new User();
+        let imgPath = 'D:/Users/jngue/WebstormProjects/Qwirk/app/assets/img/qwirk.jpg';
+
         user.firstName = req.body.firstName;
         user.lastName = req.body.lastName;
         user.email = req.body.email;
@@ -23,6 +27,10 @@ class authentication {
         user.isModerator = req.body.isModerator || false;
         user.resetPasswordExpires = null;
         user.resetPasswordToken = null;
+
+        user.profilePicture.data = fs.readFileSync(imgPath);
+        user.profilePicture.contentType = mime.lookup(imgPath);
+
         user.save(function(err) {
             let token;
             if (err) {

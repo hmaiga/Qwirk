@@ -92,7 +92,7 @@ var userController = {
                 username: params.userIdentifier
             }, function onGetUserByUsernameAndPassword(err, user) {
                 if (err) return callback(err);
-                if (!user) return callback("Aucun utilisateur n'a été trouvé")
+                if (!user) return callback("Aucun utilisateur n'a été trouvé");
                 else {
                     if(user.password !== params.password) {
                         return callback("Username and password not match")
@@ -101,7 +101,29 @@ var userController = {
                 }
             })
         }
+    },
+
+    getUserProfile : function (userIdentifier,res, callback) {
+        let object = {};
+        if (helper.validateEmail(userIdentifier)) {
+            object.email = userIdentifier;
+        }
+        else {
+            object.username = userIdentifier;
+        }
+        return userModel.findOne(object, function (err, user) {
+            if (err) return callback(err.json());
+            if (!user) return callback("Aucun utilisateur n'a été trouvé");
+            let userJson = user.toJSON();
+            if(!userJson.profilePicture) return callback('User does not have a user profile');
+            res.contentType(user.profilePicture.contentType);
+            res.send(user.profilePicture.data);
+        })
+    },
+
+    setUserProfile : function (req, res, done) {
+
     }
-}
+};
 
 module.exports = userController;

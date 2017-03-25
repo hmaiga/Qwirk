@@ -53,6 +53,34 @@ let userRouters = function userRouters(router) {
                 }
             })
         });
+    router.route('/user/:userIdentifier')
+        .get(function (req, res) {
+            return userController.getUserProfile(req.params.userIdentifier, res, function (err, user) {
+                if(err) return res.status(500).send(err);
+                if(typeof user === "string") return res.status(500).send(user);
+                res.status(200).send("Success");
+            })
+        });
+    router.route('/user/:username')
+        .post(function (req, res) {
+            console.log(req.form);
+            req.form.complete(function(err, fields, files){
+            if (err) {
+                next(err);
+            } else {
+                console.log('\nuploaded %s to %s'
+                    ,  files.image.filename
+                    , files.image.path);
+            }
+        });
+
+            /*
+            return userController.getUserProfile(req.params.username, res, function (err, user) {
+                if(err) return res.status(500).send(err);
+                if(typeof user === "string") return res.status(500).send(user);
+                res.status(200).send("Success");
+            })*/
+        });
     router.route('/user')
         .post(function(req, res) {
             return userController.findUserByUserIdentifierAndPassword(params, function (err, user) {
@@ -76,10 +104,14 @@ let userRouters = function userRouters(router) {
         .post(function (req, res, next) {
             return restorePassController.forgot(req, res, next);
         });
-    router.route('/reset/:token')
+    router.route('/reset')
         .post(function (req, res) {
-            return restorePassController.forgot(req, res);
+            return restorePassController.changePasswordUser(req, res);
         });
+    router.route('/reset/:token')
+        .get(function (req, res) {
+            return restorePassController.reset(req, res);
+        })
 };
 
 module.exports = userRouters;
