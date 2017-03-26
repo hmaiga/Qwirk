@@ -4,9 +4,21 @@
 
 let passport = require('passport');
 
+let jwt = require('express-jwt');
+
+let config = require('./../../config/');
+
+let PARAM = config.secret;
+let auth = jwt({
+    secret: config.secret['PARAM'].secret,
+    userProperty: 'payload'
+});
+
 let userController = require('./../controllers').user;
 let authenticationController = require('./../controllers').authentication;
 let restorePassController = require('./../controllers').restorePass;
+
+
 
 let userRouters = function userRouters(router) {
     router.route('/users')
@@ -65,21 +77,21 @@ let userRouters = function userRouters(router) {
         .post(function (req, res) {
             console.log(req.form);
             req.form.complete(function(err, fields, files){
-            if (err) {
-                next(err);
-            } else {
-                console.log('\nuploaded %s to %s'
-                    ,  files.image.filename
-                    , files.image.path);
-            }
-        });
+                if (err) {
+                    next(err);
+                } else {
+                    console.log('\nuploaded %s to %s'
+                        ,  files.image.filename
+                        , files.image.path);
+                }
+            });
 
             /*
-            return userController.getUserProfile(req.params.username, res, function (err, user) {
-                if(err) return res.status(500).send(err);
-                if(typeof user === "string") return res.status(500).send(user);
-                res.status(200).send("Success");
-            })*/
+             return userController.getUserProfile(req.params.username, res, function (err, user) {
+             if(err) return res.status(500).send(err);
+             if(typeof user === "string") return res.status(500).send(user);
+             res.status(200).send("Success");
+             })*/
         });
     router.route('/user')
         .post(function(req, res) {
@@ -99,7 +111,7 @@ let userRouters = function userRouters(router) {
         .post(function (req, res) {
             return authenticationController.register(req, res);
         });
-    
+
     router.route('/forgot')
         .post(function (req, res, next) {
             return restorePassController.forgot(req, res, next);
@@ -111,7 +123,19 @@ let userRouters = function userRouters(router) {
     router.route('/reset/:token')
         .get(function (req, res) {
             return restorePassController.reset(req, res);
+        });
+    router.get('/profile', auth, function (req, res) {
+        return authenticationController.profile(req, res, function (err, user) {
+            if(err) res.status(500).send(err);
+            res.status(200).send(user);
         })
+    });
+    router.get('/delete', auth, function (req, res) {
+        return authenticationController.desactivateUserAccount(req, res, function (err, result) {
+            if(err) res.status(500).send(err);
+            res.status(200).send(result);
+        })
+    });
 };
 
 module.exports = userRouters;

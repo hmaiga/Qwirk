@@ -5,7 +5,7 @@ let passport = require('passport');
 let mongoose = require('mongoose');
 let fs = require('fs');
 let mime = require('mime');
-let User = mongoose.model('User');
+let User = require('./../models').user;
 let Status = mongoose.model('Status');
 let async = require('async');
 
@@ -87,6 +87,36 @@ class authentication {
                 res.status(401).json(info);
             }
         })(req, res);
+    }
+    static profile(req, res, callback) {
+        User.findById(req.payload._id, function (err, user) {
+            if(err) return callback(err);
+            callback(null, user);
+        })
+    }
+    static desactivateUserAccount(req, res, callback) {
+        User.findById(req.payload._id, function (err, user) {
+            if(err) return callback(err);
+            user.setPassword("delete");
+            user.firstName = null;
+            user.lastName = null;
+            user.username = null;
+            user.resetPasswordExpires = null;
+            user.resetPasswordToken = null;
+
+            user.save(function (err) {
+                if (err) {
+                    console.log(err);
+                    res.status(500).json(err);
+                    callback(err);
+                    return;
+                }
+                callback(null, {
+                    "Success" : "Ok"
+                });
+                res.status(200)
+            })
+        })
     }
 }
 
