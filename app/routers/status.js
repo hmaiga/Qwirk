@@ -1,7 +1,16 @@
 /**
  * Created by TBS on 26/02/2017.
  */
-var statusController = require('./../controllers').status
+var statusController = require('./../controllers').status;
+let jwt = require('express-jwt');
+
+let config = require('./../../config/');
+
+let PARAM = config.secret;
+let auth = jwt({
+    secret: config.secret['PARAM'].secret,
+    userProperty: 'payload'
+});
 
 var statusRouters = function statusRouters(router) {
     router.route('/statuses')
@@ -42,6 +51,15 @@ var statusRouters = function statusRouters(router) {
                 }
             })
         })
-}
+
+    router.get('/currentStatus', auth, function (req, res, next) {
+        statusController.getStatusByName(req, res, function (err, status) {
+            if (err) return res.status(500).send(err);
+            else {
+                res.status(200).send(status);
+            }
+        })
+    })
+};
 
 module.exports = statusRouters;

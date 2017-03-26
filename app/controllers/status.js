@@ -1,7 +1,12 @@
 /**
  * Created by TBS on 26/02/2017.
  */
-var statusModel = require('./../models').status
+var statusModel = require('./../models').status;
+let User = require('./../models').user;
+let async = require('async');
+
+let logger = require("./../helpers/logger");
+
 
 var statusController = {
     addStatus: function addStatus(params, callback) {
@@ -22,7 +27,26 @@ var statusController = {
             }
         })
     },
+    getStatusByName: function (req, res, callback) {
+        async.waterfall([
+            function (done) {
+                User.findById(req.payload._id, function (err, user) {
 
+                    done(err, user);
+                })
+            }, function (user, done) {
+                statusModel.findOne({name : user.statusData.name}, function (err, status) {
+                    logger.debug(err, status);
+                    if (err) {
+                        return callback(err);
+                    }
+                    else {
+                        return callback(null, status);
+                    }
+                })
+            }
+        ]);
+    },
     updateStatus: function updateStatus(params, callback) {
         statusModel.findOne({_id : params._id}, function(err, statusFound) {
             if (err) return callback(err)
