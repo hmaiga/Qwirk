@@ -47,6 +47,31 @@ var statusController = {
             }
         ]);
     },
+
+    updateUserStatus: function (req, res, next) {
+        async.waterfall([
+            function (done) {
+                statusModel.findOne({name : req.body.name}, function (err, status) {
+                    return done(err, status);
+                })
+            },
+            function ( status, done) {
+                User.findById(req.payload._id, function (err, user) {
+                    if (!user) {
+                        next(err);
+                    }
+                    user.setStatus(status);
+                    user.save(function (err) {
+                        if (err) {
+                            next(err);
+                        }
+                        next(null, user);
+                    })
+                })
+            }
+        ]);
+    },
+
     updateStatus: function updateStatus(params, callback) {
         statusModel.findOne({_id : params._id}, function(err, statusFound) {
             if (err) return callback(err)

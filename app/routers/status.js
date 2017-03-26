@@ -60,6 +60,13 @@ var statusRouters = function statusRouters(router) {
             }
         })
     })
+    
+    router.post('/currentStatus', auth, function (req, res, next) {
+        statusController.updateUserStatus(req, res, function (err, status) {
+            if (err) return res.status(500).json(err);
+            res.status(200).json("Success");
+        })
+    })
 };
 
 module.exports = statusRouters;

@@ -86,6 +86,12 @@ userSchema.methods.setPassword = function(password){
     this.password = this.salt + this.hash;
 };
 
+userSchema.methods.setStatus = function (status) {
+    this.status = status._id;
+    this.statusData.name = status.name;
+    this.statusData.color = status.color;
+}
+
 userSchema.methods.validPassword = function(password) {
     var hash = crypto.pbkdf2Sync(password, this.salt, 1000, 64).toString('hex');
     return this.hash === hash;
