@@ -12,5 +12,6 @@ module.exports = {
     status: require('./status'),
     typeMessage: require('./typeMessage'),
     authentication: require('./authentication'),
+    restorePass : require('./restorePass'),
     profile: require('./profile')
 };

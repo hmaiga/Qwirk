@@ -1,14 +1,15 @@
 /**
  * Created by TBS on 16/02/2017.
  */
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
 
-var statusSchema = new Schema(
+let statusSchema = new Schema(
     {
-        name: String
+        name: String,
+        color : String
     }, {timestamps: true} );
 
 
-var Status = mongoose.model('Status', statusSchema);
+let Status = mongoose.model('Status', statusSchema);
 module.exports = Status;

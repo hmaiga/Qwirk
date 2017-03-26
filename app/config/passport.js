@@ -2,13 +2,13 @@
  * Created by jngue on 14/03/2017.
  */
 
-var passport = require('passport');
-var LocalStrategy = require('passport-local').Strategy;
-var mongoose = require('mongoose');
+let passport = require('passport');
+let LocalStrategy = require('passport-local').Strategy;
+let mongoose = require('mongoose');
 
 let helper = require('./../helpers/helper');
 
-var User = mongoose.model('User');
+let User = mongoose.model('User');
 
 passport.use(new LocalStrategy({
         usernameField: 'userIdentifier'

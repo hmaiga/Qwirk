@@ -24,27 +24,29 @@ var userSchema = new Schema(
     {
         firstName: {
             type: String,
-            required: true
+            //required: true
         },
         lastName: {
             type: String,
-            required: true
+            //required: true
         },
         email: {
             type: String,
-            unique: true,
-            required: true
+            //unique: true,
+            //required: true
             //validate: emailValidator
         },
         username: {
             type: String,
-            unique: true,
-            required: true
+            //unique: true,
+            //required: true
         },
         password: {
             type: String,
-            required: true
+            //required: true
         },
+        resetPasswordToken: String,
+        resetPasswordExpires: Date,
         hash: String,
         salt: String,
         groups: [{
@@ -67,6 +69,10 @@ var userSchema = new Schema(
             data: Buffer,
             contentType: String
         },
+        statusData: {
+            name : String,
+            color : String
+        },
         setting: {
             type: Schema.Types.ObjectId,
             ref: 'Setting'
@@ -80,6 +86,12 @@ userSchema.methods.setPassword = function(password){
     this.password = this.salt + this.hash;
 };
 
+userSchema.methods.setStatus = function (status) {
+    this.status = status._id;
+    this.statusData.name = status.name;
+    this.statusData.color = status.color;
+}
+
 userSchema.methods.validPassword = function(password) {
     var hash = crypto.pbkdf2Sync(password, this.salt, 1000, 64).toString('hex');
     return this.hash === hash;
@@ -92,7 +104,7 @@ userSchema.methods.generateJwt = function() {
     return jwt.sign({
         _id: this._id,
         email: this.email,
-        name: this.name,
+        username: this.username,
         exp: parseInt(expiry.getTime() / 1000),
     }, PARAM.secret );
 };

@@ -2,12 +2,13 @@
  * Created by TBS on 21/02/2017.
  */
 
-var passport = require('passport');
+let passport = require('passport');
 
-var userController = require('./../controllers').user;
-var authenticationController = require('./../controllers').authentication;
+let userController = require('./../controllers').user;
+let authenticationController = require('./../controllers').authentication;
+let restorePassController = require('./../controllers').restorePass;
 
-var userRouters = function userRouters(router) {
+let userRouters = function userRouters(router) {
     router.route('/users')
         .get(function(req, res) {
             params = req.query.filter ? JSON.parse(req.query.filter) : {};
@@ -52,6 +53,34 @@ var userRouters = function userRouters(router) {
                 }
             })
         });
+    router.route('/user/:userIdentifier')
+        .get(function (req, res) {
+            return userController.getUserProfile(req.params.userIdentifier, res, function (err, user) {
+                if(err) return res.status(500).send(err);
+                if(typeof user === "string") return res.status(500).send(user);
+                res.status(200).send("Success");
+            })
+        });
+    router.route('/user/:username')
+        .post(function (req, res) {
+            console.log(req.form);
+            req.form.complete(function(err, fields, files){
+            if (err) {
+                next(err);
+            } else {
+                console.log('\nuploaded %s to %s'
+                    ,  files.image.filename
+                    , files.image.path);
+            }
+        });
+
+            /*
+            return userController.getUserProfile(req.params.username, res, function (err, user) {
+                if(err) return res.status(500).send(err);
+                if(typeof user === "string") return res.status(500).send(user);
+                res.status(200).send("Success");
+            })*/
+        });
     router.route('/user')
         .post(function(req, res) {
             return userController.findUserByUserIdentifierAndPassword(params, function (err, user) {
@@ -70,6 +99,19 @@ var userRouters = function userRouters(router) {
         .post(function (req, res) {
             return authenticationController.register(req, res);
         });
+    
+    router.route('/forgot')
+        .post(function (req, res, next) {
+            return restorePassController.forgot(req, res, next);
+        });
+    router.route('/reset')
+        .post(function (req, res) {
+            return restorePassController.changePasswordUser(req, res);
+        });
+    router.route('/reset/:token')
+        .get(function (req, res) {
+            return restorePassController.reset(req, res);
+        })
 };
 
 module.exports = userRouters;
