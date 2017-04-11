@@ -136,6 +136,13 @@ let userRouters = function userRouters(router) {
             res.status(200).send(result);
         })
     });
+    router.put('/update', auth, function (req, res) {
+        return authenticationController.updateUserAccount(req, res, function (err, result) {
+            console.log(err, result);
+            if(err) res.status(500).send(err);
+            res.status(200).send(result);
+        })
+    })
 };
 
 module.exports = userRouters;

@@ -95,28 +95,43 @@ class authentication {
         })
     }
     static desactivateUserAccount(req, res, callback) {
-        User.findById(req.payload._id, function (err, user) {
-            if(err) return callback(err);
-            user.setPassword("delete");
-            user.firstName = null;
-            user.lastName = null;
-            user.username = null;
-            user.resetPasswordExpires = null;
-            user.resetPasswordToken = null;
+        let user = {};
+        user.setPassword("delete");
+        user.firstName = null;
+        user.lastName = null;
+        user.username = null;
+        user.resetPasswordExpires = null;
+        user.resetPasswordToken = null;
+        user.isActivated = false;
 
-            user.save(function (err) {
-                if (err) {
-                    console.log(err);
-                    res.status(500).json(err);
-                    callback(err);
-                    return;
-                }
-                callback(null, {
-                    "Success" : "Ok"
-                });
-                res.status(200)
+        User.update({ _id: req.payload._id }, { $set: user }, callback);
+    }
+    static updateUserAccount(req, res, callback) {
+        let user = req.body;
+        user.resetPasswordToken = null;
+        user.resetPasswordExpires = null;
+/*
+        User.findByIdAndUpdate({ _id: req.payload._id }, { $set: user }, { new: true }, function (err, user) {
+            console.log(err, user)
+            if(err) return callback(err);
+            callback(null, user);
+        });*/
+
+        User.update({ _id: req.payload._id }, { $set: user }, callback);
+    }
+
+    static checkBodyRequireField(req, ...required) {
+        let user = req.body;
+        let result = true;
+        if(user) {
+            required.map(function (r) {
+                (user[r]) ? result = result && true : result = result && false;
             })
-        })
+        }
+        else {
+            result = result && false;
+        }
+        return result;
     }
 }
 
