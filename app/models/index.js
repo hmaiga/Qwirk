@@ -12,6 +12,6 @@ module.exports = {
     typeMessage: require('./typeMessage'),
     user: require('./user'),
     contact: require('./contact'),
-    linkUserGroup: require('./linkUserGroup'),
-    contactRelation: require('./contactRelation')
+    contactRelation: require('./contactRelation'),
+    linkUserGroup: require('./linkUserGroup')
 };

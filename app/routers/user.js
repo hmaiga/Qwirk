@@ -8,6 +8,9 @@ let jwt = require('express-jwt');
 
 let config = require('./../../config/');
 
+let multer = require('multer');
+let upload = multer();
+
 let PARAM = config.secret;
 let auth = jwt({
     secret: config.secret['PARAM'].secret,
@@ -25,11 +28,9 @@ let callController = require('./../controllers').call;
 let userRouters = function userRouters(router) {
     router.route('/users')
         .get(function(req, res) {
-            // params = req.query.filter ? JSON.parse(req.query.filter) : {};
-            return userController.getUsers(req.params, function(err, users) {
-                if (err) {
-                    return res.status(500).send(err)
-                }
+            params = req.query.filter ? JSON.parse(req.query.filter) : {};
+            return userController.getUsers(params, function(err, users) {
+                if (err) return res.status(500).send(err)
                 else {
                     res.status(200).send(users)
                 }
@@ -52,9 +53,7 @@ let userRouters = function userRouters(router) {
         })
 
         .put(function(req, res) {
-            //console.log("PUT Test Router params: ", req.body)
             return userController.updateUser(req.body, function(err, updatedUser) {
-                //console.log("PUT Test Router params: ", updatedUser)
                 if (err) return res.status(500).send(err);
                 else {
                     res.status(200).send(updatedUser);
@@ -101,7 +100,7 @@ let userRouters = function userRouters(router) {
      // PS :Don't forget authentification token before requested
         .post(auth, function (req, res) {
             console.log("1 post Test Router '/contact'", req.body);
-            return contactController.addContact(req,function (err, userContacts) {
+            return contactController.addContact(req, res,function (err, userContacts) {
                 console.log("2 post Test Router '/contact' : Success", userContacts);
                 if(err) return res.status(500).send(err);
                 else {
@@ -169,7 +168,6 @@ let userRouters = function userRouters(router) {
                 res.status(200).send("Success");
             })
         });
-
     router.route('/user/:username')
         .post(function (req, res) {
             console.log(req.form);
@@ -211,15 +209,61 @@ let userRouters = function userRouters(router) {
             })
         });
 
+    router.route('/uploadUserPic')
+        .post(auth, function (req, res) {
+            let storage = multer.diskStorage({
+                destination: 'D:/Users/jngue/WebstormProjects/Qwirk/app/assets/img'
+            });
+            let upload = multer({
+                storage: storage
+            }).any();
+
+            upload(req, res, function(err) {
+                if (err) {
+                    console.log(err);
+                    return res.end('Error');
+                } else {
+                    console.log('body : ', req.body);
+                    req.files.forEach(function(item) {
+                        console.log('Item : ', item);
+                        // move your file to destination
+                        return userController.setUserProfile(req, res, item, function (err, user) {
+                            if(err) return res.status(500).send(err);
+                            if(typeof user === "string") return res.status(500).send(user);
+                            res.status(200).send("Success");
+                        })
+                    });
+                    res.end('File uploaded');
+                }
+            });
+            console.log(req);
+            res.status(200).send("Success");
+           /*return userController.setUserProfile(req, res, function (err, user) {
+               if(err) return res.status(500).send(err);
+               if(typeof user === "string") return res.status(500).send(user);
+               res.status(200).send("Success");
+           })*/
+        });
+
+    router.route('/userContact/:email')
+        .get(function (req, res) {
+            return userController.findUserByEmail(req.params.email, function (err, user) {
+                if(err) return res.status(404).send(err);
+                else {
+                    res.status(200).send(user);
+                }
+            })
+        });
+
+    router.route('/')
+
     router.route('/login')
         .post(function(req, res) {
-            console.log('login : ', req);
             return authenticationController.login(req, res);
         });
 
     router.route('/register')
         .post(function (req, res) {
-            console.log("Test register route : ", req.body);
             return authenticationController.register(req, res);
         });
 
@@ -227,12 +271,10 @@ let userRouters = function userRouters(router) {
         .post(function (req, res, next) {
             return restorePassController.forgot(req, res, next);
         });
-
     router.route('/reset')
         .post(function (req, res) {
             return restorePassController.changePasswordUser(req, res);
         });
-
     router.route('/reset/:token')
         .get(function (req, res) {
             return restorePassController.reset(req, res);
@@ -250,7 +292,6 @@ let userRouters = function userRouters(router) {
         })
     });
     router.put('/update', auth, function (req, res) {
-        console.log('Receive request : ', req.body);
         return authenticationController.updateUserAccount(req, res, function (err, result) {
             console.log(err, result);
             if(err) res.status(500).send(err);

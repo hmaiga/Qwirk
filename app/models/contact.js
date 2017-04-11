@@ -20,6 +20,10 @@ let contactSchema = new Schema(
         isBlocked: {
             type: Boolean
         },
+        relationId: {
+            type: Schema.Types.ObjectId,
+            ref: 'ContactRelation'
+        }
         // isReceived: {
         //     type: Boolean
         // },
