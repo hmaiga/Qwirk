@@ -11,6 +11,7 @@ let express = require('express');
 let session = require('express-session');
 let cors = require('cors');
 let mongoose = require('mongoose');
+var Grid = require('gridfs-stream');
 let winston = require('winston');
 let bodyParser = require('body-parser');
 let cookieParser = require('cookie-parser');
@@ -31,6 +32,8 @@ let config = require('./config');
 let configDB = config.database;
 
 let apiPort = config.infra['qwirk-api'].port;
+let MessageHandler = require('./app/controllers/Utils/messageHandler');
+
 let NotificationHandler = require('./app/controllers/Utils/notificationGroupHandler');
 
 /*********************************************
@@ -42,6 +45,8 @@ let sessionStore = new MongoStore({
     collection: 'sessions'
 });
 
+Grid.mongo = mongoose.mongo;
+
 mongoose.connect(configDB.uri, configDB.options);
 
 let conn = mongoose.connection;
@@ -51,6 +56,8 @@ conn.on('error', function onError(err){
 });
 
 conn.once('open', function onOpen(){
+    let gfs = Grid(conn.db);
+    app.set('gridfs', gfs);
     debug('Mongoose connected');
 });
 
@@ -99,24 +106,22 @@ passport.deserializeUser(function(id, done) {
 
 let app = express();
 
-for (let route in initRouters) {
-    initRouters[route](router);
-}
-
 
 let server = http.createServer(app);
 let io = require('socket.io')(server);
-// io.set('origins', 'http://localhost:* http://127.0.0.1:*')
-// let io = require('socket.io').listen(server);
+let ss = require('socket.io-stream');
+
+let messageHandler = new MessageHandler(io, ss);
+messageHandler.init();
 
 // Quand un client se connecte, on le note dans la console
 
 let notificationGroupHandler = new NotificationHandler(io);
 notificationGroupHandler.init();
 
-// io.sockets.on('connection', function (socket) {
-//     console.log('Un client est connecté !');
-// });
+for (let route in initRouters) {
+    initRouters[route](router, app, messageHandler.getSocket());
+}
 
 app.use(cors());
 logger.debug("Overriding 'Express' logger");
@@ -125,7 +130,6 @@ app.use(function setResponseHeader(req, res, next){
     res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
     res.header('Expires', '-1');
     res.header('Pragma', 'no-cache');
-    // res.header('Access-Control-Allow-Origin', "http://localhost:3000");
     return next();
 });
 app.use(bodyParser.json());
@@ -144,8 +148,6 @@ app.use(function (err, req, res, next) {
         res.json({"message" : err.name + ": " + err.message});
     }
 });
-
-
 
 server.listen(apiPort, function listening(){
     debug_w('Express server listening on port ' + apiPort);

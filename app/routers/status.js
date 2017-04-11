@@ -67,6 +67,15 @@ var statusRouters = function statusRouters(router) {
             res.status(200).json("Success");
         })
     })
+
+    router.get('/initUserStatuses', function (req, res) {
+        return statusController.initUserStatuses(function (err, userStss) {
+            if(err) return res.status(500).send(err);
+            else {
+                res.status(200).send(userStss);
+            }
+        })
+    })
 };
 
 module.exports = statusRouters;

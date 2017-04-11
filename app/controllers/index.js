@@ -15,5 +15,7 @@ module.exports = {
     restorePass : require('./restorePass'),
     profile: require('./profile'),
     contact: require('./contact'),
+    call: require('./call'),
+    FileController: require('./fileController')
     linkUserGroup: require('./linkUserGroup')
 };

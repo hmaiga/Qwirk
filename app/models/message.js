@@ -22,14 +22,23 @@ var messageSchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: 'MessageStatus'
         },
-        queue: String,
+        roomName: String,
         sendTime: Date,
+        receivedTime : Date,
+        seenTime : Date,
         typeMessage: {
             type: Schema.Types.ObjectId,
             ref: 'TypeMessage'
         },
-        media: Buffer,
-        content: String
+        media: {
+            filename : String,
+            contentType : String
+        },
+        content: String,
+        contact : {
+            type : Schema.Types.ObjectId,
+            ref : 'Contact'
+        }
     }, {timestamps: true} );
 
 
