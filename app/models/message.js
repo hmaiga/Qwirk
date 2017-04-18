@@ -22,6 +22,7 @@ var messageSchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: 'MessageStatus'
         },
+        queue: String,
         sendTime: Date,
         typeMessage: {
             type: Schema.Types.ObjectId,
