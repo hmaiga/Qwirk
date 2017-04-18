@@ -1,7 +1,7 @@
 /**
  * Created by TBS on 17/02/2017.
  */
-var groupModel = require('./../models').group
+var groupModel = require('./../models').group;
 
 var groupController = {
     addGroup: function addGroup(params, callback) {
@@ -20,8 +20,12 @@ var groupController = {
         //      etc... voir model group
         // }
         return newGroup.save(function onSaveGroup(err, savedGroup) {
-            if (err) return callback(err)
+            if (err)  {
+                console.log(err)
+                return callback(err)
+            }
             else {
+                console.log(savedGroup)
                 return callback(null, savedGroup)
             }
         })
