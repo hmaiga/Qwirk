@@ -55,19 +55,20 @@ var statusController = {
                     return done(err, status);
                 })
             },
-            function ( status, done) {
+            function (status, done) {
                 User.findById(req.payload._id, function (err, user) {
-                    if (!user) {
-                        next(err);
-                    }
                     user.setStatus(status);
-                    user.save(function (err) {
+                    return done(err, user);
+                })
+            },
+            function ( user, done) {
+
+                User .update({ _id: req.payload._id }, { $set: user }, function (err, user) {
                         if (err) {
                             next(err);
                         }
                         next(null, user);
-                    })
-                })
+                });
             }
         ]);
     },

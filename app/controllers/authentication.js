@@ -110,14 +110,10 @@ class authentication {
         let user = req.body;
         user.resetPasswordToken = null;
         user.resetPasswordExpires = null;
-/*
-        User.findByIdAndUpdate({ _id: req.payload._id }, { $set: user }, { new: true }, function (err, user) {
-            console.log(err, user)
-            if(err) return callback(err);
-            callback(null, user);
-        });*/
 
-        User.update({ _id: req.payload._id }, { $set: user }, callback);
+        User.findByIdAndUpdate({ _id: req.payload._id }, { $set: user }, { new: true }, callback);
+
+        /*User.update({ _id: req.payload._id }, { $set: user }, callback);*/
     }
 
     static checkBodyRequireField(req, ...required) {
