@@ -2,6 +2,7 @@
   "name": "Qwirk-Messenger",
   "version": "1.0.0",
   "description": "Messaging app by Qwirk",
+  "private": true,
   "main": "index.js",
   "repository": {
     "type": "git",
@@ -47,5 +48,8 @@
     "request": "^2.79.0",
     "winston": "^2.2.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "child_process": "^1.0.2",
+    "gulp": "^3.9.1"
+  }
 }
