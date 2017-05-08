@@ -2,6 +2,7 @@
   "name": "Qwirk-Messenger",
   "version": "1.0.0",
   "description": "Messaging app by Qwirk",
+  "private": true,
   "main": "index.js",
   "repository": {
     "type": "git",
@@ -16,6 +17,7 @@
   ],
   "dependencies": {
     "async": "^2.1.5",
+    "amqplib": "^0.5.1",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.16.1",
     "botbuilder": "^3.6.0",
@@ -46,5 +48,8 @@
     "request": "^2.79.0",
     "winston": "^2.2.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "child_process": "^1.0.2",
+    "gulp": "^3.9.1"
+  }
 }

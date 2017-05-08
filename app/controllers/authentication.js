@@ -17,7 +17,7 @@ class authentication {
         async.waterfall([
             function (done) {
                 Status.findOne({name : "Online"}, function (err, status) {
-                    console.log(status);
+                    //console.log("mon status est : ", status);
                     done(err, status);
                 })
             },
@@ -25,7 +25,7 @@ class authentication {
                 let user = new User();
 
                 logger.debug(status);
-                let imgPath = 'D:/Users/jngue/WebstormProjects/Qwirk/app/assets/img/qwirk.jpg';
+                let imgPath = 'D:/Users/Supinfo/4PJT/Sources/Qwirk/app/assets/img/qwirk.jpg';
                 user.firstName = req.body.firstName;
                 user.lastName = req.body.lastName;
                 user.email = req.body.email;

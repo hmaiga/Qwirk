@@ -6,7 +6,7 @@ var groupController = require('./../controllers').group
 var groupRouters = function groupRouters(router) {
     router.route('/groups')
         .get(function(req, res) {
-            params = req.query ? req.query : {}
+            params = req.query.filter ? JSON.parse(req.query.filter) : {};
             return groupController.getGroups(params, function(err, groups) {
                 if (err) return res.status(500).send(err)
                 else {

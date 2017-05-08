@@ -10,5 +10,6 @@ module.exports = {
     setting: require('./setting'),
     status: require('./status'),
     typeMessage: require('./typeMessage'),
-    user: require('./user')
+    user: require('./user'),
+    contact: require('./contact')
 }

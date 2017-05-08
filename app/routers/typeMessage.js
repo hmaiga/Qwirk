@@ -6,7 +6,7 @@ var typeMessageController = require('./../controllers').typeMessage
 var typeMessageRouters = function typeMessageRouters(router) {
     router.route('/typeMessages')
         .get(function(req, res) {
-            params = req.query ? req.query : {}
+            params = req.query.filter ? JSON.parse(req.query.filter) : {};
             return typeMessageController.getTypeMessages(params, function(err, typeMessages) {
                 if (err) return res.status(500).send(err)
                 else {
