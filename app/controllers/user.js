@@ -3,18 +3,20 @@
  */
 let helper = require('./../helpers/helper');
 
-var userModel = require('./../models').user
+var userModel = require('./../models').user;
+var contactModel = require('./../models').contact;
 
 var userController = {
     addUser: function addUser(params, callback) {
-        console.log(params)
+        console.log("Test Controller : ", params)
         var newUser = new userModel(params)
-        console.log("TEST")
         return newUser.save(function onSaveUser(err, userSaved) {
             if (err) {
+                console.log("ERRRR ctrl")
                 return callback(err)
             }
             else {
+                console.log("SUCCESS ctrl")
                 return callback(null, userSaved)
             }
             
@@ -25,6 +27,7 @@ var userController = {
         return userModel.find(params, function onGetUsers(err, arrayUsers) {
             if (err) return callback(err)
             else {
+                console.log("callback type : ", typeof callback);
                 return callback(null, arrayUsers)
             }
         })
@@ -32,6 +35,7 @@ var userController = {
 
     updateUser: function updateUser(params, callback) {
         userModel.findOne({_id : params._id}, function(err, userFound) {
+            console.log("Test ctrl userFound: ", userFound)
             if (err) return callback(err)
             if (!userFound) return callback("Aucun utilisateur n'a été trouvé")
             else {
@@ -43,7 +47,7 @@ var userController = {
                     }
                 }
                 return userFound.save(function onSaveUpdateUser(err, user) {
-                    if (err) callback(err)
+                    if (err) callback(err);
                     else {
                         return callback(null, user)
                     }
@@ -52,6 +56,53 @@ var userController = {
         })
 
     },
+    
+    // getUserContacts: function (params, callback) {
+    //     console.log("Test params ", params);
+    //     return userModel.findById( params, function (err, userContacts) {
+    //         console.log("TEST getUserContacts ", userContacts);
+    //         if(err) return callback(err);
+    //         else{
+    //             console.log("TEST userContacts.contacts ", userContacts.contacts)
+    //             return callback(null, userContacts.contacts)
+    //         }
+    //     })
+    // },
+    // getUserContact: function (params, callback) {
+    //     console.log("Test params ");
+    //     return userModel.findById(params, function (err, userContacts) {
+    //         console.log("TEST getUserContacts ");
+    //         if(err) return callback(err);
+    //         else{
+    //             console.log("TEST userContacts.contacts ", userContacts.contacts);
+    //             return callback(null, userContacts.contacts);
+    //         }
+    //     })
+    // },
+    // updateUserContacts: function (params, callback) {
+    //     console.log("TEST userContacts.contacts CTRL ", params._id);
+    //     userModel.findById(params._id, function(err, userContacts){
+    //         if(err){
+    //             console.log("TEST userContacts  Fail");
+    //             return callback(err);
+    //         }
+    //         //if(!userContacts) return callback(err);
+    //         else {
+    //             console.log("TEST userContacts.contacts before loop ", userContacts);
+    //             for(var key in params.contacts) {
+    //                 let contacts = params.contacts;
+    //                 userContacts.contacts.push(contacts[key]);
+    //         }
+    //             return userContacts.save(function onSaveUpdateUser(err, user) {
+    //                 if (err) callback(err);
+    //                 else {
+    //                     console.log("TEST userContacts.contacts ", user.contacts);
+    //                     return callback(null, user);
+    //                 }
+    //             })
+    //         }
+    //     })
+    // },
 
     removeUser: function removeUser(params, callback) {
         return userModel.remove(params, function onRemoveUser(err, deletedUser) {
