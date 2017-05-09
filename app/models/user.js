@@ -45,15 +45,13 @@ var userSchema = new Schema(
             type: String,
             required: true
         },
+        resetPasswordToken: String,
+        resetPasswordExpires: Date,
         hash: String,
         salt: String,
         groups: [{
             type: Schema.Types.ObjectId,
             ref: 'Group'
-        }],
-        contacts: [{
-            type: Schema.Types.ObjectId,
-            ref: 'User'
         }],
         invitedGroups: [{
             type: Schema.Types.ObjectId,
@@ -67,11 +65,23 @@ var userSchema = new Schema(
             data: Buffer,
             contentType: String
         },
+        statusData: {
+            name : String,
+            color : String
+        },
         setting: {
             type: Schema.Types.ObjectId,
             ref: 'Setting'
         },
-        isModerator : Boolean
+        isModerator : {
+            type: Boolean,
+            default : false
+        },
+        isActivated : {
+            type: Boolean,
+            default: true
+
+        }
     }, {timestamps: true} );
 
 userSchema.methods.setPassword = function(password){
@@ -79,6 +89,12 @@ userSchema.methods.setPassword = function(password){
     this.hash = crypto.pbkdf2Sync(password, this.salt, 1000, 64).toString('hex');
     this.password = this.salt + this.hash;
 };
+
+userSchema.methods.setStatus = function (status) {
+    this.status = status._id;
+    this.statusData.name = status.name;
+    this.statusData.color = status.color;
+}
 
 userSchema.methods.validPassword = function(password) {
     var hash = crypto.pbkdf2Sync(password, this.salt, 1000, 64).toString('hex');
@@ -92,7 +108,7 @@ userSchema.methods.generateJwt = function() {
     return jwt.sign({
         _id: this._id,
         email: this.email,
-        name: this.name,
+        username: this.username,
         exp: parseInt(expiry.getTime() / 1000),
     }, PARAM.secret );
 };
