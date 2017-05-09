@@ -40,7 +40,7 @@ class contactController {
                 console.log("Test contact content user type: ", typeof user);
                 console.log("Test contact content user: ", user);
                 if(!user) return callback("user doesn't exist");
-                callback(err, req);
+                callback(null, req);
             })
         }
     }
@@ -66,56 +66,81 @@ class contactController {
 
     static contactHandler(req, callback){
         console.log("test 1: ", req.body);
-        async.waterfall([
-            function (done) {
-                console.log("test 2: ", req.body);
-                userModel.findOne({email : req.body.email}, function (err, contact) {
-                    console.log("Test 3 : ", contact);
+            console.log("test 2: ", req.body);
+            if(helper.validateEmail(req.body.email)){
+                console.log("test 3 => email valided: ", req.body.email);
+                userModel.findOne({email : req.body.email}, function (err, subscriber) {
+                    console.log("Test 3 subscriber Test: ", subscriber);
                     if(err) return callback(err);
-                    done(null, req, contact);
+                    console.log("Test 3-1 : ", !subscriber);
+                    if(subscriber){
+                        console.log("Test 4 : ", !subscriber);
+                        contactModel.findOne({owner : req.body.user, email : req.body.email}, function (err, relatedContact){
+                            console.log("Test contact content 1: ", relatedContact);
+                            console.log("Test contact type 1: ", typeof relatedContact);
+                            if(err) return callback(err);
+                            if(typeof relatedContact !== "undefined" &&  relatedContact !== null)
+                                return callback("Cannot add an existing contact, this one is already exists in your contact list");
+                            else {
+                                // this.insertContact(req, function (err, contact) {
+                                //     if(err) return callback(err);
+                                //     callback(err, contact);
+                                // });
+                                let newContact = new contactModel();
+                                newContact.owner = req.body.owner;
+                                newContact.email = req.body.email;
+                                newContact.nickname = req.body.nickname.toLowerCase();
+                                newContact.isPending = req.body.isPending || true;
+                                newContact.isSentOne = req.body.isSentOne || false;
+                                newContact.contact = req.body.concat || null;
+                                newContact.isBlocked = req.body.isBlocked || false;
+                                console.log("insertContact func : ", newContact);
+                                return newContact.save(function onSave(err, contact) {
+                                    if (err) callback(err);
+                                    else {
+                                        console.log("TEST contact", contact);
+                                        return callback(null, contact);
+                                    }
+                                })
+                            }
+                        })
+                    }
+                    else{
+                        console.log("Test 5 : ", req.body.email);
+                        utils.sendMail(req, function (err, success) {
+                            console.log("Send mail test : ", success);
+                            if(err) return done(err);
+                            else {
+                                console.log("Test 8 : ", req.body);
+                                let newContact = new contactModel();
+                                newContact.owner = req.body.owner;
+                                newContact.email = req.body.email;
+                                newContact.nickname = req.body.nickname.toLowerCase();
+                                newContact.isPending = req.body.isPending || true;
+                                newContact.isSentOne = req.body.isSentOne || false;
+                                newContact.contact = req.body.concat || null;
+                                newContact.isBlocked = req.body.isBlocked || false;
+                                console.log("insertContact func : ", newContact);
+                                return newContact.save(function onSave(err, contact) {
+                                    if (err) callback(err);
+                                    else {
+                                        console.log("TEST contact", contact);
+                                        return callback(null, contact);
+                                    }
+                                });
+                                // this.insertContact(req, function (err, contact) {
+                                //     if(err) return done(err);
+                                //     console.log("insertContact done!", contact);
+                                //     done(null, req, contact);
+                                // });
+                            }
+                        });
+                    }
                 })
-            },
-            function (req, contact, done) {
-                console.log("Test 4 : ", !contact);
-                if(!contact && helper.validateEmail(req.body.email)){
-                    console.log("Test 5 : ", req.body.email);
-                    utils.sendMail(req, function (err, success) {
-                        console.log("Send mail test : ", success);
-                        if(err) return done(err);
-                        else {
-                            console.log("Test 8 : ", req.body);
-                            this.insertContact(req, function (err, contact) {
-                                if(err) return done(err);
-                                console.log("insertContact done!", contact);
-                                done(null, req, contact);
-                            });
-                        }
-                    });
-                }
-            },
-            function (req, contact, done) {
-                if(contact){
-                    contactModel.findOne({owner : req.body.user, email : req.body.email}, function (err, relatedContact){
-                        console.log("Test contact content 1: ", relatedContact);
-                        console.log("Test contact type 1: ", typeof relatedContact);
-                        if(err) return callback(err);
-                        if(typeof relatedContact !== "undefined" &&  relatedContact !== null)
-                            return callback("Cannot add an existing contact, this one is already exists in your contact list");
-                        else {
-                            this.insertContact(req, function (err) {
-                                if(err) return done(err);
-                                done(err, contact);
-                            });
-                        }
-                    });
-                }
             }
-
-        ], function (err, contact) {
-            if(err) return callback(err);
-            console.log("Handler terminal : ", contact);
-            callback(null, contact);
-        });
+            else {
+                return callback("Contact email address is invalid, please retry with another one")
+            }
     }
 
     static removeUserContact(req, callback) {
