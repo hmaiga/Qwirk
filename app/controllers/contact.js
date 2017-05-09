@@ -23,7 +23,7 @@ class contactController {
         })
     }
 
-    static addContact(req, res, callback) {
+    static addContact(req, callback) {
         async.waterfall([
             this.findUser(req),
             this.contactHandler
@@ -47,7 +47,7 @@ class contactController {
 
     static insertContact(req, callback){
         let newContact = new contactModel();
-        newContact.user = req.body.owner;
+        newContact.owner = req.body.owner;
         newContact.email = req.body.email;
         newContact.nickname = req.body.nickname.toLowerCase();
         newContact.isPending = req.body.isPending || true;
