@@ -132,7 +132,7 @@ let userRouters = function userRouters(router) {
 
     router.route('/contact/block')
     .put(function (req, res) {
-        //console.log("1 PUT Test Router /contact/block", req.body);
+        console.log("1 PUT Test Router /contact/block", req.body);
         contactController.blockContact(req.body, function (err, contact) {
                 //console.log("2 PUT Test Router /contact/block", req.body);
                 if(err) return res.status(500).send(err);
