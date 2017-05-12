@@ -75,7 +75,25 @@ class utils {
             })
         }
     }
-    
+
+    static insertContact(req, callback){
+        let newContact = new contactModel();
+        newContact.owner = req.body.owner;
+        newContact.email = req.body.email;
+        newContact.nickname = req.body.nickname.toLowerCase();
+        newContact.isPending = req.body.isPending || true;
+        newContact.isSentOne = req.body.isSentOne || false;
+        newContact.contact = req.body.concat || null;
+        newContact.isBlocked = req.body.isBlocked || false;
+        console.log("insertContact func : ", newContact);
+        return newContact.save(function onSave(err, contact) {
+            if (err) callback(err);
+            else {
+                console.log("TEST contact", contact);
+                return callback(null, contact);
+            }
+        })
+    }
 };
 
 module.exports = utils;

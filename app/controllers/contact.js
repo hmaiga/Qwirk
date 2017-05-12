@@ -7,7 +7,7 @@ let async = require('async');
 
 let userModel = require('./../models').user;
 let contactModel = require('./../models').contact;
-let utils = require('./../controllers/Utils/contact');
+let utils = require('./../controllers/Utils/contactHelper');
 let helper = require('./../helpers/helper');
 
 class contactController {
@@ -45,25 +45,6 @@ class contactController {
         }
     }
 
-    static insertContact(req, callback){
-        let newContact = new contactModel();
-        newContact.owner = req.body.owner;
-        newContact.email = req.body.email;
-        newContact.nickname = req.body.nickname.toLowerCase();
-        newContact.isPending = req.body.isPending || true;
-        newContact.isSentOne = req.body.isSentOne || false;
-        newContact.contact = req.body.concat || null;
-        newContact.isBlocked = req.body.isBlocked || false;
-        console.log("insertContact func : ", newContact);
-        return newContact.save(function onSave(err, contact) {
-            if (err) callback(err);
-            else {
-                console.log("TEST contact", contact);
-                return callback(null, contact);
-            }
-        })
-    }
-
     static contactHandler(req, callback){
         console.log("test 1: ", req.body);
             if(helper.validateEmail(req.body.email)){
@@ -74,29 +55,17 @@ class contactController {
                     console.log("Test 3-1 : ", !subscriber);
                     if(subscriber){
                         console.log("Test 4 : ", !subscriber);
-                        contactModel.findOne({owner : req.body.user, email : req.body.email}, function (err, relatedContact){
+                        contactModel.findOne({owner : req.body.owner, email : req.body.email}, function (err, relatedContact){
                             console.log("Test contact content 1: ", relatedContact);
-                            console.log("Test contact type 1: ", typeof relatedContact);
+                            console.log("Test contact type 1: ", !relatedContact);
                             if(err) return callback(err);
-                            if(typeof relatedContact !== "undefined" &&  relatedContact !== null)
+                            if(relatedContact)
                                 return callback("Cannot add an existing contact, this one is already exists in your contact list");
                             else {
-                                let newContact = new contactModel();
-                                newContact.owner = req.body.owner;
-                                newContact.email = req.body.email;
-                                newContact.nickname = req.body.nickname.toLowerCase();
-                                newContact.isPending = req.body.isPending || true;
-                                newContact.isSentOne = req.body.isSentOne || false;
-                                newContact.contact = req.body.concat || null;
-                                newContact.isBlocked = req.body.isBlocked || false;
-                                console.log("insertContact func : ", newContact);
-                                return newContact.save(function onSave(err, contact) {
-                                    if (err) callback(err);
-                                    else {
-                                        console.log("TEST contact", contact);
-                                        return callback(null, contact);
-                                    }
-                                })
+                                utils.insertContact(req, function (err, contact) {
+                                    if(err) return callback(err);
+                                    callback(null, contact);
+                                });
                             }
                         })
                     }
@@ -113,21 +82,9 @@ class contactController {
                                     if(err) return done(err);
                                     else {
                                         console.log("Test 8 : ", req.body);
-                                        let newContact = new contactModel();
-                                        newContact.owner = req.body.owner;
-                                        newContact.email = req.body.email;
-                                        newContact.nickname = req.body.nickname.toLowerCase();
-                                        newContact.isPending = req.body.isPending || true;
-                                        newContact.isSentOne = req.body.isSentOne || false;
-                                        newContact.contact = req.body.concat || null;
-                                        newContact.isBlocked = req.body.isBlocked || false;
-                                        console.log("insertContact func : ", newContact);
-                                        return newContact.save(function onSave(err, contact) {
-                                            if (err) callback(err);
-                                            else {
-                                                console.log("TEST contact", contact);
-                                                return callback(null, contact);
-                                            }
+                                        utils.insertContact(req, function (err, contact) {
+                                            if(err) return callback(err);
+                                            callback(null, contact);
                                         });
                                     }
                                 });
@@ -143,8 +100,8 @@ class contactController {
 
     static removeUserContact(req, callback) {
         console.log("1 DELETE Test /contact", req);
-        contactModel.findOneAndRemove({user : req.user, contact : req.contact}, function (err, contact) {
-            console.log("2 DELETE Test  /contacts'", contact);
+        contactModel.findOneAndRemove({owner : req.owner, email : req.email}, function (err, contact) {
+            console.log("2 DELETE Test  /contact'", contact);
             if(err) return callback(err);
             if(!contact) return callback("Contact not found");
            else{
@@ -155,11 +112,11 @@ class contactController {
 
     static renameUserContact(req, callback) {
         console.log("Test 1");
-        contactModel.findOneAndUpdate({user : req.user, contact : req.contact}, {nickName : req.nickname}, function (err, contact) {
+        contactModel.findOneAndUpdate({owner : req.owner, email : req.email}, {nickname : req.nickname}, function (err, contact) {
             console.log("findOneAndUpdate test ", contact);
             console.log("callback : ", typeof callback);
             if(err) return callback(err);
-            //if(!userContact) return callback('User not found');
+            if(!contact) return callback('Cannot rename an invalid contact');
             else{
                 console.log("Test else statement", contact);
                 console.log("callback : ", typeof callback);
@@ -170,17 +127,17 @@ class contactController {
 
     static blockContact(req, callback) {
         console.log("Test 1");
-        contactModel.findOneAndUpdate({user : req.user, contact : req.contact}, {isBlocked : req.isBlocked}, function (err, contact) {
+        contactModel.findOneAndUpdate({owner : req.owner, email : req.email}, {isBlocked : req.isBlocked}, function (err, contact) {
             console.log("findOneAndUpdate test ", contact);
             if(err) return callback(err);
-            //if(!userContact) return callback('User not found');
+            if(!contact) return callback('Cannot block an invalid contact');
+            if(contact.isPending) return callback("Cannot block contact before subscription");
             else{
                 console.log("Test else statement", contact);
                 return callback(null, contact);
             }
         } )
     }
-
 
 }
 
