@@ -15,8 +15,8 @@ let auth = jwt({
 var statusRouters = function statusRouters(router) {
     router.route('/statuses')
         .get(function(req, res) {
-            params = req.query.filter ? JSON.parse(req.query.filter) : {};
-            return statusController.getStatuses(params, function(err, statuses) {
+            // params = req.query.filter ? JSON.parse(req.query.filter) : {};
+            return statusController.getStatuses(req.params, function(err, statuses) {
                 if (err) return res.status(500).send(err)
                 else {
                     res.status(200).send(statuses)

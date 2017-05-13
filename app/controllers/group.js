@@ -2,10 +2,57 @@
  * Created by TBS on 17/02/2017.
  */
 var groupModel = require('./../models').group;
+var linkUserGroupController = require('./linkUserGroup');
 
+console.log(groupModel)
 var groupController = {
     addGroup: function addGroup(params, callback) {
-        var newGroup = new groupModel(params)
+        // ici on envoie forcément soit isPublic: false, soit true
+        if (params.isPublic === true) {
+            //vérifier si le user membre esr présent, boucle..
+            var newGroup = new groupModel(params)
+            return newGroup.save(function onSaveGroup(err, savedChannel) {
+                if (err)  {
+                    return callback(err)
+                }
+                else {
+                    linkUserGroupController.addLinkToGroup({data: params, groupId: savedChannel._id}, function(err) {
+                        if (err) return callback(err, null)
+                        else {
+                            return callback(null, savedChannel)
+                        }
+                    })
+                    
+                }
+            })
+
+        }
+        
+        if (params.isPublic === false) {
+            var formerMember = params.members
+            params.members = []
+            var newGroup = new groupModel(params)
+            return newGroup.save(function onSaveGroup(err, savedGroup) {
+                if (err)  {
+                    console.log(err)
+                    return callback(err)
+                }
+                else {
+                    console.log(savedGroup)
+                    params.members = formerMember
+                    linkUserGroupController.addLinkToGroup({object: params, groupId: savedGroup._id}, function(err) {
+                        if (err) return callback(err, null)
+                        else {
+                            return callback(null, savedGroup)
+                        }
+                    })
+
+                }
+            })
+        }
+        else {
+            return callback('Le champ isPublic n\'existe pas');
+        }
         //params ici est de la forme :
         // {
         //      name: 'groupName',
@@ -19,16 +66,8 @@ var groupController = {
         //      ]
         //      etc... voir model group
         // }
-        return newGroup.save(function onSaveGroup(err, savedGroup) {
-            if (err)  {
-                console.log(err)
-                return callback(err)
-            }
-            else {
-                console.log(savedGroup)
-                return callback(null, savedGroup)
-            }
-        })
+        
+
     },
     getGroups: function getGroups(params, callback) {
         //params = {id : '123'} ou {} pour avoir tous les groupes

@@ -25,8 +25,8 @@ let callController = require('./../controllers').call;
 let userRouters = function userRouters(router) {
     router.route('/users')
         .get(function(req, res) {
-            params = req.query.filter ? JSON.parse(req.query.filter) : {};
-            return userController.getUsers(params, function(err, users) {
+            // params = req.query.filter ? JSON.parse(req.query.filter) : {};
+            return userController.getUsers(req.params, function(err, users) {
                 if (err) {
                     return res.status(500).send(err)
                 }
