@@ -6,8 +6,8 @@ var moderatorController = require('./../controllers').moderator
 var moderatorRouters = function moderatorRouters(router) {
     router.route('/moderators')
         .get(function(req, res) {
-            params = req.query.filter ? JSON.parse(req.query.filter) : {};
-            return moderatorController.getModerators(params, function(err, moderators) {
+            // params = req.query.filter ? JSON.parse(req.query.filter) : {};
+            return moderatorController.getModerators(req.params, function(err, moderators) {
                 if (err) return res.status(500).send(err)
                 else {
                     res.status(200).send(moderators)
