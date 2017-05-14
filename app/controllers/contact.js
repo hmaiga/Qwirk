@@ -4,21 +4,24 @@
 'use strict';
 
 let async = require('async');
+let q = require('q');
 
 let userModel = require('./../models').user;
 let contactModel = require('./../models').contact;
 let utils = require('./../controllers/Utils/contactHelper');
 let helper = require('./../helpers/helper');
+let logger = require('./../helpers/logger');
+
 
 class contactController {
     static getContacts(params, callback) {
-        console.log("Test params ", params.user_id);
-        return contactModel.find({owner : params.user_id}, function (err, contacts) {
+        console.log("Test params ", params.payload._id);
+        return contactModel.find({owner : params.payload._id}, function (err, contacts) {
             console.log("TEST contacts ", contacts);
             if(err) return callback(err);
             else{
                 console.log("TEST contacts ", contacts);
-                return callback(null, contacts)
+                return callback(null, contacts);
             }
         })
     }

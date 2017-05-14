@@ -71,6 +71,18 @@ let userRouters = function userRouters(router) {
             })
         });
 
+    router.get('/contacts/',auth, function (req, res) {
+            console.log("1 GET Test Router '/contacts/:user_id' : ", req);
+            return contactController.getContacts(req, function (err, contacts) {
+                console.log("2 GET Test Router '/contacts/:user_id' : ", contacts);
+                if(err) return res.status(500).send(err);
+                else {
+                    console.log("3 GET Test Router '/contacts/:user_id' : Success");
+                    res.status(200).send(contacts);
+                }
+            })
+        });
+
     router.route('/contacts/:user_id')
         .get(function (req, res) {
             console.log("1 GET Test Router '/contacts/:user_id' : ", req.params);
@@ -79,7 +91,7 @@ let userRouters = function userRouters(router) {
                 if(err) return res.status(500).send(err);
                 else {
                     console.log("3 GET Test Router '/contacts/:user_id' : Success");
-                    res.status(400).send(contacts);
+                    res.status(200).send(contacts);
                 }
             })
         });
@@ -180,6 +192,16 @@ let userRouters = function userRouters(router) {
                     res.status(200).send(user);
                 }
             });
+        });
+
+    router.route('/id/:user_id')
+        .get(function (req, res) {
+            return userController.findUserById(req.params.user_id, function (err, user) {
+                if(err) return res.status(404).send(err);
+                else {
+                    res.status(200).send(user);
+                }
+            })
         });
 
     router.route('/login')
