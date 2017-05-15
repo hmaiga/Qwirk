@@ -8,27 +8,63 @@ var linkUserGroupController = {
         if (group.data.isPublic === false) {
             for(var user in group.data.members) {
                 var newLink = new linkUserGroupModel({group: group.groupId, user: group.data.members[user]._id, isPending: true, isKicked: false, isBanned: false, isAccepted: false })
-                return newLink.save(function onSaveLink(err) {
-                    if (err) {
-                        return callback(err)
-                    }
-                })
+                if(group.data.members.length === parseInt(user) + 1) {
+                    newLink.save(function onSaveLink(err) {
+                        console.log(group.data.members[user]._id)
+                        if (err) {
+                            return callback(err)
+                        }
+                        else {
+                            console.log('INSIDE)')
+                            return callback(null)
+                        }
+
+                    })
+
+                }
+                
+                else {
+                    newLink.save(function onSaveLink(err) {
+                        console.log(group.data.members[user]._id)
+                        if (err) {
+                            return callback(err)
+                        }
+
+                        console.log('INSIDE elase)')
+                    })
+                }
+                
             }
-            return callback(null)
+            
         }
         
         if (group.data.isPublic === true) {
             console.log('TADAAA')
             for(var user in group.data.members) {
                 var newLink = new linkUserGroupModel({group: group.groupId, user: group.data.members[user]._id, isPending: false, isKicked: false, isBanned: false, isAccepted: true })
-                newLink.save(function onSaveLink(err, savedLink) {
-                    if (err) {
-                        return callback(err)
-                    }
-                })
+                if(group.data.members.length === parseInt(user) + 1) {
+                    newLink.save(function onSaveLink(err) {
+                        if (err) {
+                            return callback(err)
+                        }
+                        else {
+                            return callback(null)
+                        }
+                    })
+
+
+                }
+
+                else {
+                    newLink.save(function onSaveLink(err) {
+                        if (err) {
+                            return callback(err)
+                        }
+
+                    })
+                }
             }
 
-            return callback(null)
 
         }
 
