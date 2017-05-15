@@ -17,23 +17,31 @@ class MessageHandler {
 
         this.rabbitConn = amqp.createConnection({url: "amqp://localhost"});
         this.chatExchange;
+        this.roomName = "";
+        this.numClients = {};
+        this.socketId = "";
     }
     init() {
         console.log("Init socket io");
         this.rabbitMqInit();
         this.io.on('connection', function (result) { 
-            console.log("Init socket io", result);
+            console.log("Init socket io nsp : /");
         });
+        this.initContact();
     }
 
     initContact() {
-        this.contactNsp.on('connection', this.socketConnection);
+        let self = this;
+        this.contactNsp.on('connection', function (socket) {
+            console.log('Init socket io nsp :', socket.nsp.name);
+            self.socketConnection(socket);
+        });
     }
 
     socketConnection(socket) {
-        console.log("New connection on socket io");
         this.onDisconnectNameSpace(socket);
         this.joinContactChannel(socket);
+        console.log("New connection on socket io");
     }
 
     joinContactsChannels(socket) {
@@ -57,8 +65,21 @@ class MessageHandler {
     }
 
     joinContactChannel(socket) {
+        let self = this;
         socket.on('room', function (room) {
+            console.log('Bind room join');
             socket.join(room);
+            socket.room = room;
+
+            if (self.numClients[room] == undefined) {
+                self.numClients[room] = 1;
+            } else {
+                self.numClients[room]++;
+            }
+            self.rabbiMqBindSub(socket);
+            self.onMessageToRoom(socket);
+            self.roomName = room;
+            console.log('Join room success', room, self.roomName, self.numClients);
         })
     }
 
@@ -69,7 +90,9 @@ class MessageHandler {
     }
 
     socketEmitter(socket, room, event, message) {
-        socket.in(room).emit(event, message);
+
+        console.log('Socket Emitter', room, event, message);
+        socket.broadcast.to(room).emit(event, message);
     }
 
     getContactPromise(id) {
@@ -84,57 +107,51 @@ class MessageHandler {
     rabbitMqInit(exchange) {
         let self = this;
         self.rabbitConn.on('ready', function() {
-            self.chatExchange = self.rabbitConn.exchange(exchange, {
+            self.chatExchange = self.rabbitConn.exchange(self.roomName, {
                 'type': 'fanout'
             });
         });
     }
 
-    onMessageToRoom(contact, socket) {
-        let queueName;
+    onMessageToRoom(socket) {
         let self = this;
-        (contact.username > self.user.username) ?
-            queueName = self.user.username + contact.username
-            : queueName = contact.username + self.user.username;
-        socket.on(queueName, function (text) {
-            self.rabbitMqPub(contact, text);
+        console.log('toto : ', self.roomName);
+        socket.on(self.roomName, function (text) {
+            self.socketId = socket.id;
+            console.log('On Message to room', self.roomName, self.socketId, text);
+            self.rabbitMqPub(text);
         })
     }
 
-    rabbiMqBindSub(contact, socket) {
+    rabbiMqBindSub(socket) {
         let self = this;
-        let queueName;
-        (contact.username > self.user.username) ?
-            queueName = self.user.username + contact.username
-            : queueName = contact.username + self.user.username;
-        this.rabbitConn.queue(queueName, {
+        this.rabbitConn.queue(self.roomName, {
             exclusive: true
         }, function(q) {
             //Bind to chatExchange w/ "#" or "" binding key to listen to all messages.
-            q.bind(queueName, queueName);
-
+            console.log('RabbitMQ Queue Bind', q.name, self.roomName);
+            q.bind(self.roomName, self.roomName, function (res) {
+                console.log("Bind ok");
+            });
+            console.log('RabbitMQ Subscriber After binding', q.name);
             //Subscribe When a message comes, send it back to browser
             q.subscribe(function(message) {
-                self.socketEmitter(socket, queueName, queueName, message);
+                console.log('RabbitMQ Subscriber', q.name, message);
+                self.socketEmitter(socket, self.roomName, self.roomName, message);
             });
         });
 
     }
 
-    rabbitMqPub(contact, text) {
-        let queueName;
-        (contact.username > self.user.username) ?
-            queueName = self.user.username + contact.username
-            : queueName = contact.username + self.user.username;
+    rabbitMqPub(text) {
         let message = new messageModel();
-        message.sender = this.user._id;
-        message.receiverUser = contact._id;
         message.messageStatus = null;
         message.sendTime = new Date();
-        message.queue = queueName;
+        message.queue = this.roomName;
         message.typeMessage = null;
         message.content = text;
-        self.chatExchange.publish(queueName, message);
+        console.log('RabbitMQ Publisher', this.roomName, message);
+        this.chatExchange.publish(this.roomName, message);
     }
 }
 

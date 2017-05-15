@@ -133,12 +133,14 @@ app.use(function (err, req, res, next) {
     }
 });
 
-app.listen(apiPort, function listening(){
+let messageHandler = new MessageHandler(io);
+messageHandler.init();
+
+server.listen(apiPort, function listening(){
     debug_w('Express server listening on port ' + apiPort);
 });
 
-let messageHandler = new MessageHandler(io);
-messageHandler.init();
+
 
 module.exports = server;
 
