@@ -3,11 +3,20 @@
  */
 var groupModel = require('./../models').group;
 var linkUserGroupController = require('./linkUserGroup');
+var userController = require('./user');
 
 console.log(groupModel)
 var groupController = {
     addGroup: function addGroup(params, callback) {
         // ici on envoie forcément soit isPublic: false, soit true
+        for(var user in  params.members) {
+            userController.getUsers({_id: params.members[user]._id}, function (err, foundUser) {
+                if (err) return callback(err)
+                else {
+
+                }
+            })
+        }
         if (params.isPublic === true) {
             //vérifier si le user membre esr présent, boucle..
             var newGroup = new groupModel(params)
@@ -40,7 +49,7 @@ var groupController = {
                 else {
                     console.log(savedGroup)
                     params.members = formerMember
-                    linkUserGroupController.addLinkToGroup({object: params, groupId: savedGroup._id}, function(err) {
+                    linkUserGroupController.addLinkToGroup({data: params, groupId: savedGroup._id}, function(err) {
                         if (err) return callback(err, null)
                         else {
                             return callback(null, savedGroup)
