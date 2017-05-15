@@ -16,7 +16,7 @@ let logger = require('./../helpers/logger');
 class contactController {
     static getContacts(params, callback) {
         console.log("Test params ", params.payload._id);
-        return contactModel.find({owner : params.payload._id}, function (err, contacts) {
+        return contactModel.find({$or:[ {owner : params.payload._id}, {contact : params.payload._id} ]}, function (err, contacts) {
             console.log("TEST contacts ", contacts);
             if(err) return callback(err);
             else{

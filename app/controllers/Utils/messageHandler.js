@@ -84,7 +84,13 @@ class MessageHandler {
     }
 
     onDisconnectNameSpace(socket) {
+        let self = this;
         socket.on('disconnect', function (e) {
+            if (self.numClients[self.roomName] == 0) {
+                self.numClients[self.roomName] = undefined;
+            } else if (self.numClients[self.roomName] == 0) {
+                self.numClients[self.roomName]--;
+            }
             console.log('Disconnect ', e);
         })
     }
