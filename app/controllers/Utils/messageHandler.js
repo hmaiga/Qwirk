@@ -8,6 +8,7 @@ let messageModel = require('./../../models').message;
 
 let contactController = require('./../../controllers').contact;
 let userController = require('./../../controllers').user;
+let messageController = require('./../../controllers').message;
 
 class MessageHandler {
     constructor(io, user) {
@@ -59,6 +60,7 @@ class MessageHandler {
                         socket.join(roomName);
                         self.rabbiMqBindSub(contact, socket);
                         self.onMessageToRoom(contact, socket);
+                        self.onNotification(socket);
                     })
             }
         }
@@ -68,6 +70,8 @@ class MessageHandler {
         let self = this;
         socket.on('room', function (room) {
             console.log('Bind room join');
+            //socket.disconnect();
+            //self.leaveAllRooms(socket);
             socket.join(room);
             socket.room = room;
 
@@ -78,6 +82,7 @@ class MessageHandler {
             }
             self.rabbiMqBindSub(socket);
             self.onMessageToRoom(socket);
+            self.onNotification(socket);
             self.roomName = room;
             console.log('Join room success', room, self.roomName, self.numClients);
         })
@@ -91,8 +96,17 @@ class MessageHandler {
             } else if (self.numClients[self.roomName] == 0) {
                 self.numClients[self.roomName]--;
             }
+            //self.leaveAllRooms(socket);
+            socket.disconnect();
             console.log('Disconnect ', e);
         })
+    }
+
+    leaveAllRooms(socket) {
+        let rooms = this.io.sockets.manager.roomClients[socket.id];
+        for(let room in rooms) {
+            socket.leave(room);
+        }
     }
 
     socketEmitter(socket, room, event, message) {
@@ -125,7 +139,35 @@ class MessageHandler {
         socket.on(self.roomName, function (text) {
             self.socketId = socket.id;
             console.log('On Message to room', self.roomName, self.socketId, text);
-            self.rabbitMqPub(text);
+            //self.rabbitMqPub(text);
+
+            let message = new messageModel(text);
+            console.log('RabbitMQ Publisher', this.roomName, message);
+            messageController.addMessage(message, function (err, result) {
+                if(err) console.error(err);
+                else {
+                    console.log(result);
+                    self.socketEmitter(socket, self.roomName, self.roomName, message);
+                }
+            })
+        })
+    }
+
+    onNotification(socket) {
+        let self = this;
+        console.log('isTyping binding event');
+        socket.on('isTyping', function (text) {
+            console.log('isTyping emitting to client');
+            self.socketEmitter(socket, self.roomName, 'isTyping', text);
+        })
+    }
+
+    onBlurNotification(socket) {
+        let self = this;
+        console.log('isTyping blur event');
+        socket.on('isTyping', function (text) {
+            console.log('isTyping emitting to client');
+            self.socketEmitter(socket, self.roomName, 'isTyping', '');
         })
     }
 

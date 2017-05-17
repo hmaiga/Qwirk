@@ -10,34 +10,8 @@ var messageController = {
         return newMessage.save(function onSaveMessage(err, savedMessage) {
             if (err) return callback(err)
             else {
-                if (params.receiverGroup !== [] || !params.receiverGroup) {
-                    amqp.connect('amqp://localhost', function(err, conn) {
-                        conn.createChannel(function(err, ch) {
-                            var q = params.receiverGroup._id;
-                            var msg = params.content;
-                            //gérer les médias... Si params.media alors Buffer..
-                            ch.assertQueue(q, {durable: false});
-                            // Note: on Node 6 Buffer.from(msg) should be used
-                            ch.sendToQueue(q, new Buffer(msg));
-                            console.log(" [x] Sent %s", msg);
-                        });
-                        setTimeout(function() { conn.close(); process.exit(0) }, 500);
-                    });
-                    return callback(null, savedMessage)
-                }
+                if (err) return callback(err)
                 else {
-                    amqp.connect('amqp://localhost', function(err, conn) {
-                        conn.createChannel(function(err, ch) {
-                            var q = params.queue;
-                            var msg = params.content;
-                            //gérer les médias... Si params.media alors Buffer..
-                            ch.assertQueue(q, {durable: false});
-                            // Note: on Node 6 Buffer.from(msg) should be used
-                            ch.sendToQueue(q, new Buffer(msg));
-                            console.log(" [x] Sent %s", msg);
-                        });
-                        setTimeout(function() { conn.close(); process.exit(0) }, 500);
-                    });
                     return callback(null, savedMessage)
                 }
             }
