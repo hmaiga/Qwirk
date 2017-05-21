@@ -7,7 +7,6 @@ var linkUserGroupRouters = function linkUserLinkUserGroupRouters(router) {
     router.route('/getinvites/:user_id')
         .get(function(req, res) {
             // params = req.query.filter ? JSON.parse(req.query.filter) : {};
-            console.log(req.params)
             return linkUserGroupController.getPendingInvitesFromUser(req.params, function(err, linkUserGroups) {
                 if (err) return res.status(500).send(err)
                 else {
@@ -16,7 +15,7 @@ var linkUserGroupRouters = function linkUserLinkUserGroupRouters(router) {
             })
         });
 
-    router.route('/acceptinvites')
+    router.route('/acceptinvite')
         .put(function(req, res) {
             if (req.body.isAccepted === true && req.body.isPending === false) {
                 return linkUserGroupController.acceptLinkUserGroup(req.body, function(err, updatedLinkUserGroup) {
@@ -32,7 +31,7 @@ var linkUserGroupRouters = function linkUserLinkUserGroupRouters(router) {
             }
         });
     
-    router.route('/refuseinvites')
+    router.route('/refuseinvite')
         //ici on veut req.body : { isAccepted: false, isPending: false, group: '123', user: '456' }
         .put(function(req, res) {
             if (req.body.isAccepted === false && req.body.isPending === false) {

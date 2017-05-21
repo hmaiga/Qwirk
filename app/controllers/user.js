@@ -27,7 +27,6 @@ var userController = {
         return userModel.find(params, function onGetUsers(err, arrayUsers) {
             if (err) return callback(err)
             else {
-                console.log("callback type : ", typeof callback);
                 return callback(null, arrayUsers)
             }
         })
