@@ -7,7 +7,7 @@ let async = require('async');
 
 let userModel = require('./../models').user;
 let contactModel = require('./../models').contact;
-let utils = require('./../controllers/Utils/contactHelper');
+let util = require('./../controllers/Utils/contactHelper');
 let helper = require('./../helpers/helper');
 
 class contactController {
@@ -62,10 +62,11 @@ class contactController {
                             if(relatedContact)
                                 return callback("Cannot add an existing contact, this one is already exists in your contact list");
                             else {
-                                utils.insertContact(req, function (err, contact) {
+                                util.insertContact(req, function (err, contact) {
                                     if(err) return callback(err);
                                     callback(null, contact);
                                 });
+
                             }
                         })
                     }
@@ -75,14 +76,15 @@ class contactController {
                             if(err) return callback(err);
                             console.log("Test 5  relatedContact: ", relatedContact);
                             if(relatedContact && relatedContact.isPending == true)
+                                //This scenario can be change, in order to allow mail resent
                                 return callback("Invitation for this contact is already sent, waiting for user reply");
                             else {
-                                utils.sendMail(req, function (err, success) {
+                                util.sendMail(req, function (err, success) {
                                     console.log("Send mail test : ", success);
                                     if(err) return done(err);
                                     else {
                                         console.log("Test 8 : ", req.body);
-                                        utils.insertContact(req, function (err, contact) {
+                                        util.insertContact(req, function (err, contact) {
                                             if(err) return callback(err);
                                             callback(null, contact);
                                         });
