@@ -87,7 +87,7 @@ let userRouters = function userRouters(router) {
     router.route('/contact')
         .post(function (req, res) {
             console.log("1 post Test Router '/contact'", req.body);
-            return contactController.addContact(req, res,function (err, userContacts) {
+            return contactController.addContact(req,function (err, userContacts) {
                 console.log("2 post Test Router '/contact' : Success", userContacts);
                 if(err) return res.status(500).send(err);
                 else {
@@ -132,7 +132,7 @@ let userRouters = function userRouters(router) {
 
     router.route('/contact/block')
     .put(function (req, res) {
-        //console.log("1 PUT Test Router /contact/block", req.body);
+        console.log("1 PUT Test Router /contact/block", req.body);
         contactController.blockContact(req.body, function (err, contact) {
                 //console.log("2 PUT Test Router /contact/block", req.body);
                 if(err) return res.status(500).send(err);
