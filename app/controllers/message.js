@@ -1,20 +1,62 @@
 /**
  * Created by TBS on 26/02/2017.
  */
-var messageModel = require('./../models').message
-var amqp = require('amqplib/callback_api');
+let messageModel = require('./../models').message
+let messageStatusController = require('./messageStatus');
+let async = require('async');
+let amqp = require('amqplib/callback_api');
 
-var messageController = {
+let messageController = {
     addMessage: function addMessage(params, callback) {
-        var newMessage = new messageModel(params)
-        return newMessage.save(function onSaveMessage(err, savedMessage) {
-            if (err) return callback(err)
-            else {
-                if (err) return callback(err)
-                else {
-                    return callback(null, savedMessage)
-                }
+        async.waterfall([
+            function (done) {
+                messageStatusController.findStatusByName(params.messageStatus.status, function (err, status) {
+                    params.messageStatus = status;
+                    done();
+                })
+            },
+            function () {
+                let newMessage = new messageModel(params);
+                console.log("New message : ", newMessage, params);
+                return newMessage.save(function onSaveMessage(err, savedMessage) {
+                    if (err) return callback(err)
+                    else {
+                        if (err) return callback(err)
+                        else {
+                            return callback(null, savedMessage)
+                        }
+                    }
+                })
             }
+        ], function(err) {
+            logger.debug(err);
+            if (err) return next(err);
+        })
+    },
+
+    updateMessageStatus : function (params, callback) {
+        async.waterfall([
+            function (done) {
+                messageStatusController.findStatusByName(params.messageStatus.status, function (err, status) {
+                    params.messageStatus = status;
+                    done();
+                })
+            },
+            function () {
+                let newMessage = new messageModel(params);
+                return newMessage.save(function onSaveMessage(err, savedMessage) {
+                    if (err) return callback(err)
+                    else {
+                        if (err) return callback(err)
+                        else {
+                            return callback(null, savedMessage)
+                        }
+                    }
+                })
+            }
+        ], function(err) {
+            logger.debug(err);
+            if (err) return next(err);
         })
     },
 
@@ -32,7 +74,7 @@ var messageController = {
             if (err) return callback(err)
             if (!messageFound) return callback("Aucun message n'a été trouvé")
             else {
-                for(var key in params) {
+                for(let key in params) {
                     if (key === '_id') {continue;}
                     if (messageFound[key]) {
                         messageFound[key] = params[key];

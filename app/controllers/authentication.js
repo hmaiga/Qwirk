@@ -44,8 +44,8 @@ class authentication {
                 user.isModerator = req.body.isModerator || false;
                 user.resetPasswordExpires = null;
                 user.resetPasswordToken = null;
-                user.profilePicture.data = fs.readFileSync(imgPath);
-                user.profilePicture.contentType = mime.lookup(imgPath);
+                user.profilePicture.data = req.body.profilePicture || fs.readFileSync(imgPath);
+                user.profilePicture.contentType = mime.lookup(req.body.profilePic) || mime.lookup(imgPath);
 
                 user.save(function(err) {
                     let token;

@@ -53,6 +53,7 @@
   },
   "devDependencies": {
     "child_process": "^1.0.2",
+    "fs-extra": "^3.0.1",
     "gulp": "^3.9.1"
   }
 }

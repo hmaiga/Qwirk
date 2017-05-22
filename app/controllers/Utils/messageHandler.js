@@ -48,7 +48,7 @@ class MessageHandler {
     joinContactsChannels(socket) {
         let self = this;
         let contactsUser = contactController.getContacts(this.user._id);
-        //var contactNsp =
+        //let contactNsp =
         for(let contactUser of contactsUser) {
             let roomName;
             if(contactUser.contact !== null && !contactUser.isPending && !contactUser.isBlocked) {
@@ -110,7 +110,6 @@ class MessageHandler {
     }
 
     socketEmitter(socket, room, event, message) {
-
         console.log('Socket Emitter', room, event, message);
         socket.broadcast.to(room).emit(event, message);
     }
@@ -138,16 +137,17 @@ class MessageHandler {
         console.log('toto : ', self.roomName);
         socket.on(self.roomName, function (text) {
             self.socketId = socket.id;
-            console.log('On Message to room', self.roomName, self.socketId, text);
+            //console.log('On Message to room', self.roomName, self.socketId, text);
             //self.rabbitMqPub(text);
 
-            let message = new messageModel(text);
-            console.log('RabbitMQ Publisher', this.roomName, message);
-            messageController.addMessage(message, function (err, result) {
+            //let message = new messageModel(text);
+            //console.log('RabbitMQ Publisher', self.roomName, message);
+            text.messageStatus.status = 'sent';
+            messageController.addMessage(text, function (err, result) {
                 if(err) console.error(err);
                 else {
                     console.log(result);
-                    self.socketEmitter(socket, self.roomName, self.roomName, message);
+                    self.socketEmitter(socket, self.roomName, self.roomName, result);
                 }
             })
         })
