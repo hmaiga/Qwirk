@@ -7,7 +7,7 @@ let async = require('async');
 
 let userModel = require('./../models').user;
 let contactModel = require('./../models').contact;
-let util = require('./../controllers/Utils/contactHelper');
+let util = require('./../controllers/Utils/contactHandler');
 let helper = require('./../helpers/helper');
 
 class contactController {
