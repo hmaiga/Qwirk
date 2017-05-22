@@ -18,6 +18,7 @@ let userController = require('./../controllers').user;
 let authenticationController = require('./../controllers').authentication;
 let restorePassController = require('./../controllers').restorePass;
 let contactController = require('./../controllers').contact;
+let callController = require('./../controllers').call;
 
 
 
@@ -242,10 +243,23 @@ let userRouters = function userRouters(router) {
         })
     });
     router.put('/update', auth, function (req, res) {
+        console.log('Receive request : ', req.body);
         return authenticationController.updateUserAccount(req, res, function (err, result) {
             console.log(err, result);
             if(err) res.status(500).send(err);
             res.status(200).send(result);
+        })
+    });
+
+    router.put('/update/peer', function (req, res) {
+        console.log('Receive request : ', req.body);
+        return callController.updateUserPeerId(req.body, function (err, user) {
+            console.log('user peer id updated : ', user);
+            if(err) res.status(500).send(err);
+            else {
+                console.log('user peer id  is : ', user.peerId);
+                res.status(200).send(user.peerId);
+            }
         })
     })
 };

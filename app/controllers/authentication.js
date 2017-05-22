@@ -25,7 +25,7 @@ class authentication {
                 let user = new User();
 
                 logger.debug(status);
-                let imgPath = 'D:/Users/jngue/WebstormProjects/Qwirk/app/assets/img/qwirk.jpg';
+                let imgPath = 'https://pbs.twimg.com/profile_images/582908900757913600/hJE11W14.jpg';
                 user.firstName = req.body.firstName;
                 user.lastName = req.body.lastName;
                 user.email = req.body.email;

@@ -8,7 +8,7 @@ let q = require('q');
 
 let userModel = require('./../models').user;
 let contactModel = require('./../models').contact;
-let utils = require('./../controllers/Utils/contactHelper');
+let utils = require('./../controllers/Utils/contactHandler');
 let helper = require('./../helpers/helper');
 let logger = require('./../helpers/logger');
 
