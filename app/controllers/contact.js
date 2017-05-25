@@ -77,6 +77,7 @@ class contactController {
                                     console.log('insertContact  1  ok : ');
                                     callback(null, contact);
                                 });
+
                             }
                         })
                     }
@@ -86,6 +87,7 @@ class contactController {
                             if(err) return callback(err);
                             console.log("Test 5  relatedContact: ", relatedContact);
                             if(relatedContact)
+                              //This scenario can be change, in order to allow mail resent 
                                 return callback("Invitation for this contact is already sent, waiting for user reply");
                             else {
                                 util.sendMail(req, function (err, success) {
@@ -96,6 +98,7 @@ class contactController {
                                         //console.log("Test 8 : ", req.body);
                                         console.log('insertContact  2 : ');
                                         util.insertContact(req, null, function (err, contact) {
+
                                             if(err) return callback(err);
                                             callback(null, contact);
                                         });
