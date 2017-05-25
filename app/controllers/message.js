@@ -61,12 +61,23 @@ let messageController = {
     },
 
     getMessages: function getMessages(params, callback) {
-        return messageModel.find(params, function onGetMessages(err, arrayMessages) {
+        return messageModel.find({contact : params.contact})
+            .skip(parseInt(params.start))
+            .limit(parseInt(params.limit))
+            .sort([['sendTime', 'descending']])
+            .exec(function onGetMessages(err, arrayMessages) {
+                console.log(arrayMessages);
+                if (err) return callback(err)
+                else {
+                    return callback(null, arrayMessages)
+                }
+            });/*
+        return messageModel.find({contact : params.contact}, { skip: params.start, limit: params.limit, sort : -1 }, function onGetMessages(err, arrayMessages) {
             if (err) return callback(err)
             else {
                 return callback(null, arrayMessages)
             }
-        })
+        })*/
     },
 
     updateMessage: function updateMessage(params, callback) {

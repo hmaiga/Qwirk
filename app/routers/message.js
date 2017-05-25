@@ -7,10 +7,10 @@
 var messageController = require('./../controllers').message
 
 var messageRouters = function messageRouters(router) {
-    router.route('/messages')
+    router.route('/messages/:contact/:start/:limit')
         .get(function(req, res) {
-            params = req.query.filter ? JSON.parse(req.query.filter) : {};
-            return messageController.getMessages(params, function(err, messages) {
+            //params = req.query.filter ? JSON.parse(req.query.filter) : {};
+            return messageController.getMessages(req.params, function(err, messages) {
                 if (err) return res.status(500).send(err)
                 else {
                     res.status(200).send(messages)
