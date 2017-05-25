@@ -31,6 +31,7 @@ let config = require('./config');
 let configDB = config.database;
 
 let apiPort = config.infra['qwirk-api'].port;
+let MessageHandler = require('./app/controllers/Utils/messageHandler');
 
 
 /*********************************************
@@ -104,6 +105,8 @@ for (let route in initRouters) {
 }
 
 let server = http.createServer(app);
+let io = require('socket.io')(server);
+
 app.use(cors());
 logger.debug("Overriding 'Express' logger");
 app.use(require('morgan')("default", { "stream": logger.stream }));
@@ -130,7 +133,10 @@ app.use(function (err, req, res, next) {
     }
 });
 
-app.listen(apiPort, function listening(){
+let messageHandler = new MessageHandler(io);
+messageHandler.init();
+
+server.listen(apiPort, function listening(){
     debug_w('Express server listening on port ' + apiPort);
 });
 

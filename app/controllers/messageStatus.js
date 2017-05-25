@@ -2,9 +2,11 @@
  * Created by TBS on 26/02/2017.
  */
 var messageStatusModel = require('./../models').messageStatus
+let MESSAGE_STATUSES = require('./Utils/global_variables');
 
 var messageStatusController = {
     addMessageStatus: function addMessageStatus(params, callback) {
+        console.log(params, new messageStatusModel(params));
         var newMessageStatus = new messageStatusModel(params)
         return newMessageStatus.save(function onSaveMessageStatus(err, savedMessage) {
             if (err) return callback(err)
@@ -51,6 +53,20 @@ var messageStatusController = {
             if (err) return callback(err)
             else {
                 return callback(null, removedMessageStatus)
+            }
+        })
+    },
+    
+    initMessageStatuses : function (callback) {
+        messageStatusController.getMessageStatuses(null, function (err, result) {
+            if (!result || !result.length || result.length <= 0) {
+                for (let msgSts of MESSAGE_STATUSES) {
+                    console.log(msgSts);
+                    messageStatusController.addMessageStatus(msgSts, callback);
+                }
+            }
+            else {
+                callback(new Error("Already in database"));
             }
         })
     }

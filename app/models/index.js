@@ -11,5 +11,6 @@ module.exports = {
     status: require('./status'),
     typeMessage: require('./typeMessage'),
     user: require('./user'),
-    contact: require('./contact')
-}
+    contact: require('./contact'),
+    contactRelation: require('./contactRelation')
+};

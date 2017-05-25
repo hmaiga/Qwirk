@@ -14,5 +14,6 @@ module.exports = {
     authentication: require('./authentication'),
     restorePass : require('./restorePass'),
     profile: require('./profile'),
-    contact: require('./contact')
+    contact: require('./contact'),
+    call: require('./call')
 };

@@ -6,35 +6,24 @@ let Schema = mongoose.Schema;
 
 let contactSchema = new Schema(
     {
-        owner: {
+        user: {
             type: Schema.Types.ObjectId,
             ref: 'User'
         },
-        contact: {
-            type: Schema.Types.ObjectId,
-            ref: 'User'
+        contactEmail: {
+            type: String,
+            unique: false
         },
         nickname: {
-            type: String
-        },
-        email: {
             type: String
         },
         isBlocked: {
             type: Boolean
         },
-        isPending: {
-            type: Boolean
-        },
-        isReceived: {
-            type: Boolean
-        },
-        token: {
-            type: String
-        },
-
-    }, {timestamps: true} );
-
+        // isReceived: {
+        //     type: Boolean
+        // },
+    }, {timestamps: true});
 
 let Contact = mongoose.model('Contact', contactSchema);
 module.exports = Contact;
