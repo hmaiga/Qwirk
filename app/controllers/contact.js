@@ -17,12 +17,44 @@ let logger = require('./../helpers/logger');
 class contactController {
     static getContacts(params, callback) {
         console.log("Test params ", params.payload._id);
-        return Contact.find({$or:[ {user : params.payload._id}, {contactEmail : params.payload._id} ]}, function (err, contacts) {
+        let customContact  = [];
+        return ContactRelation.find({$or:[ {userEmail : params.payload.email}]}).lean().exec(function (err, contacts) {
             console.log("TEST contacts ", contacts);
+            let countOccur = contacts.length;
             if(err) return callback(err);
             else{
-                console.log("TEST contacts ", contacts);
-                return callback(null, contacts);
+               // let contactsDictionnary = [];
+                for(var contt in contacts) {
+                    let ctt = contacts[contt];
+                    console.log('ctt : ', ctt);
+                    for(var key in ctt) {
+                        if(key === 'user') {
+                            console.log('ctt key is : ', ctt[key]);
+                            let contactId = ctt[key];
+                            Contact.findById(contactId, function (err, user) {
+                                console.log('uSER : ', user);
+                                if(err) {
+                                    console.log('Error in getContacts line : 33');
+                                }
+                                else{
+                                    for(var u in user) {
+                                        if(u === 'isBlocked' || u === 'nickname' || u == 'user'){
+                                            ctt[(u === 'user' ? 'userId' : u)] = user[u];
+                                            // ctt.push({
+                                            //     key : u === 'user' ? 'userId' : u,
+                                            //     value : user[u]
+                                            // });
+                                        }
+                                    }
+                                    customContact.push(ctt);
+                                    countOccur--;
+                                    console.log('customContact Test 2 : ', customContact);
+                                    if (countOccur === 0) return callback(null, customContact);
+                                }
+                            });
+                        }
+                    }
+                }
             }
         })
     }
@@ -59,12 +91,7 @@ class contactController {
                     if(err) return callback(err);
                     console.log("Test 3-1 : ", !subscriber);
                     if(subscriber){
-                        Contact.findOne(
-                            {$or:[
-                                {$and:[ {user : req.payload._id}, {contactEmail : req.body.contactemail} ]},
-                                {$and:[ {user : subscriber._id}, {contactEmail : req.payload.email} ]}
-                            ]},
-                            function (err, relatedContact){
+                        ContactRelation.findOne({$and:[{userEmail : req.payload.email}, {userContactEmail : req.body.contactemail}]}, function (err, relatedContact) {
                             console.log("Test contact content 1: ", relatedContact);
                             console.log("Test contact type 1: ", !relatedContact);
                             if(err) return callback(err);
@@ -82,11 +109,17 @@ class contactController {
                     }
                     else{
                         console.log("Test 5 : ", req.body.contactemail);
-                        Contact.findOne({$and:[ {user : req.payload._id}, {contactEmail : req.body.contactemail} ]}, function (err, relatedContact){
+                        ContactRelation.findOne({$and:[ {userEmail : req.payload.email}, {userContactEmail : req.body.contactemail} ]}, function (err, relatedContact){
                             if(err) return callback(err);
                             console.log("Test 5  relatedContact: ", relatedContact);
-                            if(relatedContact)
-                                return callback("Invitation for this contact is already sent, waiting for user reply");
+                            if(relatedContact) {
+                                util.sendMail(req, function (err, success) {
+                                    console.log("Send mail success : ", success);
+                                    console.log("Send mail err : ", err ? ' send mail fired error' : 'send mailexec with success' );
+                                    if(err) return callback(err);
+                                     callback("Invitation for this contact is already sent, mail resent waiting for user reply");
+                                });
+                            }
                             else {
                                 util.sendMail(req, function (err, success) {
                                     console.log("Send mail success : ", success);
@@ -115,26 +148,17 @@ class contactController {
         console.log("1 DELETE Test /contact", req);
         async.waterfall([
             function (done) {
-                Contact.find({
-                    $or: [
-                        {$and : [{user : req.payload._id}, {contactEmail : req.body.contactemail}]},
-                        {$and : [{user : req.body.contactUserId}, {contactEmail : req.payload.email}]},
-                    ]
-                }, function (err, contacts) {
-                    console.log("2 DELETE Test  contact'", contacts);
+                ContactRelation.findOneAndRemove({$and : [{userEmail : req.payload.email}, {userContactEmail : req.body.contactemail}]}, function (err, contact) {
+                    console.log("2 DELETE Test  contact'", contact);
                     if(err) return callback(err);
-                    if(!contacts) return callback("Contact not found");
+                    if(!contact) return callback("Contact not found");
                     else {
                         let listToRemove = [];
-                        for(var contact in contacts) {
-                            //console.log('KEY content: ', contacts[contact]);
-                            let ctt = contacts[contact];
-                            for(var key in ctt) {
-                                // console.log('Index content : ', key === '_id' ? ctt[key] : null;);
-                                if (key === '_id') {
-                                    console.log('Index : ' +  key + ' and content is : ' + ctt[key]);
-                                    listToRemove.push(ctt[key]);
-                                }
+                        for(var key in contact) {
+                            // console.log('Index content : ', key === '_id' ? ctt[key] : null;);
+                            if (key === 'user' || key === 'userContact') {
+                                console.log('Index : ' +  key + ' and content is : ' + contact[key]);
+                                listToRemove.push(contact[key]);
                             }
                         }
                         console.log('listToRemove : ', listToRemove);
@@ -149,17 +173,10 @@ class contactController {
                     return done(err, listToRemove);
                 });
             },
-            function (listToRemove, done) {
-                ContactRelation.remove( {$or: [{user : {$in : listToRemove}}, {userContact : {$in : listToRemove}}]}, function (err, success) {
-                    if(err) done(err);
-                    console.log('ContactRelation > Remove success : ', success.result);
-                    return done(null, success);
-                });
-            }
         ], function (err, success) {
             if(err) {
                 console.log(err.json());
-                res.status(500).json(err)
+                return callback(err);
             }
             callback(null, success);
         });
@@ -167,31 +184,69 @@ class contactController {
 
     static renameUserContact(req, callback) {
         console.log("Test params ", req.payload._id);
-        Contact.findOneAndUpdate({user : req.payload._id, contactEmail : req.body.contactemail}, {nickname : req.body.nickname}, function (err, contact) {
-            console.log("findOneAndUpdate test ", contact);
-            console.log("callback : ", typeof callback);
-            if(err) return callback(err);
-            if(!contact) return callback('Cannot rename an invalid contact');
-            else{
-                console.log("Test else statement", contact);
-                console.log("callback : ", typeof callback);
-                    return  callback(null, contact);
+        async.waterfall([
+            function (done) {
+                ContactRelation.findOne({$and : [{userEmail : req.payload.email}, {userContactEmail : req.body.contactemail}]}, function (err, user) {
+                    console.log('User to update : ', user);
+                    if(err) callback(err);
+                    if(!user) return done('Cannot rename an invalid contact');
+                    else {
+                        console.log('User : ', user.user);
+                        done(null, user.user);
+                    }
+                })
+            },
+            function (contactId, done) {
+                console.log('Canact Id : ' + contactId);
+                Contact.findByIdAndUpdate(contactId,  {nickname : req.body.nickname}, function (err, user) {
+                    console.log("findOneAndUpdate test ", user);
+                    console.log("callback : ");
+                    if(!user) return done('Cannot rename an invalid contact');
+                    else{
+                        console.log("Test else statement", user);
+                        return  done(null, user);
+                    }
+                })
             }
-        })
+        ], function (err, success) {
+            if(err) {
+                return callback(err);
+            }
+            callback(null, success);
+        });
     }
 
     static blockContact(req, callback) {
         console.log("Test 1");
-        Contact.findOneAndUpdate({user : req.payload._id, contactEmail : req.body.contactemail}, {isBlocked : req.body.isBlocked}, function (err, contact) {
-            console.log("findOneAndUpdate test ", contact);
-            if(err) return callback(err);
-            if(!contact) return callback('Cannot block an invalid contact');
-            if(contact.isPending) return callback("Cannot block contact before subscription");
-            else{
-                console.log("Test else statement", contact);
-                return callback(null, contact);
+        console.log("Test params ", req.payload._id);
+        async.waterfall([
+            function (done) {
+                ContactRelation.findOne({$and : [{userEmail : req.payload.email}, {userContactEmail : req.body.contactemail}]}, function (err, user) {
+                    if(err) callback(err);
+                    else {
+                        console.log('User : ', user.user);
+                        done(null, user.user);
+                    }
+                })
+            },
+            function (contactId, done) {
+                Contact.findByIdAndUpdate(contactId,  {isBlocked : req.body.isBlocked}, function (err, user) {
+                    console.log("findOneAndUpdate test ", user);
+                    console.log("callback : ");
+                    if(!user) return done('Cannot rename an invalid contact');
+                    else{
+                        console.log("Test else statement", user);
+                        return  done(null, user);
+                    }
+                })
             }
-        } )
+        ], function (err, success) {
+            if(err) {
+                console.log(err.json());
+                return callback(err);
+            }
+            callback(null, success);
+        });
     }
 
 }

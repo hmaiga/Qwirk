@@ -95,33 +95,43 @@ class utils {
         console.log('insertFirstContact');
         return function (done) {
             let newContact = new contactModel();
-            newContact.user = req.payload._id;
-            newContact.contactEmail = req.body.contactemail;
-            newContact.nickname = req.body.nickname || subscriber.username || '';
-            newContact.isBlocked = req.body.isBlocked || false;
-            console.log("insertFirstContact : ", newContact);
+            if(subscriber){
+                console.log('subscriber : ', subscriber.email);
+                console.log('subscriber : ', subscriber.email);
+                newContact.user = subscriber._id;
+                newContact.contactEmail =  req.body.contactemail || subscriber.email;
+                newContact.nickname = req.body.nickname || subscriber.username || '';
+                newContact.isBlocked = false;
+                newContact.relationId = null;
+                console.log("insertFirstContact : ", newContact);
+            }
+            else {
+                newContact.user = null;
+                newContact.contactEmail =  req.body.contactemail;
+                newContact.nickname = req.body.nickname || '';
+                newContact.isBlocked = false;
+                newContact.relationId = null;
+                console.log("insertFirstContact : ", newContact);
+            }
             newContact.save(function onSave(err, contact) {
                 if (err) done(err);
                 else {
                     console.log("TEST contact", contact);
-                    done(null, req, contact, subscriber);
+                    done(null, req, contact);
                 }
             });
         };
     }
 
-    static insertSecondContact(req, firstCContact, subscriber ,done){
+    static insertSecondContact(req, firstCContact ,done){
         console.log('insertSecondContact');
         console.log('Inner userModel.findById : ', req.payload.email);
         let newContact = new contactModel();
-        console.log('subscriber : ', subscriber);
-        console.log('subscriber type 1 : ', typeof subscriber);
-        console.log('subscriber type 2 : ', subscriber === null);
-        newContact.user = subscriber === null ?  null : subscriber._id ;
-        console.log('subscriber : ', subscriber);
+        newContact.user = req.payload._id;
         newContact.contactEmail = req.payload.email;
         newContact.nickname = req.payload.username || '';
         newContact.isBlocked = false;
+        newContact.relationId = null;
         console.log("insertSecondContact  : ", newContact);
         newContact.save(function OnSave(err, secondContact) {
             if(err) console.log('Here : ', err);
@@ -134,18 +144,31 @@ class utils {
 
     static contactPropagation(firstCContact, secondContact, done) {
         console.log('insertSecondContact');
+        console.log("secondContact.contactEmail; : " + secondContact.contactEmail);
+        console.log("firstContact.contactEmail; : " + firstCContact.contactEmail);
         let relation = new contactRelation();
         relation.user = firstCContact._id;
         relation.userContact = secondContact._id;
         relation.isPending = true;
+        relation.userEmail = secondContact.contactEmail;
+        relation.userContactEmail = firstCContact.contactEmail;
         relation.token = '';
         relation.save(function OnSave(err, contactRelation) {
             if(err) console.log('Here : ', err);
             else{
-                console.log('Here 2 ', contactRelation);
+                console.log('ContactRelation :  ' + contactRelation);
+                contactModel.findByIdAndUpdate(firstCContact._id, { $set: { relationId: contactRelation._id }}, function (err, saveOk) {
+                    if(err) done(err, saveOk);
+                    console.log('firstCContact saveOk : ' + saveOk);
+                });
+                contactModel.findByIdAndUpdate(secondContact._id, { $set: { relationId: contactRelation._id }}, function (err, saveOk) {
+                    if(err) done(err, saveOk);
+                    console.log('secondCContact saveOk : ' + saveOk);
+                });
                 done(null, contactRelation);
             }
         });
+
     }
 };
 
