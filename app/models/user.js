@@ -84,7 +84,7 @@ var userSchema = new Schema(
         },
         peerId: {
             type: String,
-            required : true
+            //required : true
         }
     }, {timestamps: true} );
 

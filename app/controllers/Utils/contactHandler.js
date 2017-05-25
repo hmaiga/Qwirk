@@ -9,12 +9,13 @@ let async = require('async');
 let nodemailer = require('nodemailer');
 let userModel = require('./../../models').user;
 let contactModel = require('./../../models').contact;
+let contactRelation = require('./../../models').contactRelation;
 let logger = require("./../../helpers/logger");
 let helper = require('./../../helpers/helper');
 
 class utils {
     static sendMail(req, callback){
-        console.log("Test 6 : ", req.body.email);
+        console.log("Test 6 : ", req.body.contactemail);
         async.waterfall([
             this.generateToken(req),
             this.generatedUrl,
@@ -47,7 +48,7 @@ class utils {
             }
         });
         let mailOptions = {
-            to: req.body.email,
+            to: req.body.contactemail,
             from: 'noreply@qwirk.com',
             subject: 'New invitation from a Qwirk user',
             text: 'Invitation test.\n\n' +
@@ -59,14 +60,14 @@ class utils {
         smtpTransport.sendMail(mailOptions, function(err) {
             //req.flash('info', 'An e-mail has been sent to ' + user.email + ' with further instructions.');
             //console.log('Message %s sent: %s', info.messageId, info.response);
-            console.log("Mail sent");
+            console.log("Mail sent : ", err);
             done(err);
         });
 
     }
 
     static generateToken(req) {
-        console.log("generated token before exec", req.body.email);
+        console.log("generated token before exec", req.body.contactemail);
         return function (done) {
             crypto.randomBytes(20, function(err, buf) {
                 let token = buf.toString('hex');
@@ -76,23 +77,75 @@ class utils {
         }
     }
 
-    static insertContact(req, callback){
+    static insertContact(req, subscriber, callback){
+        console.log('insertContact');
+        console.log("Test 6 : ", req.body.contactemail);
+        async.waterfall([
+            this.insertFirstContact(req, subscriber),
+            this.insertSecondContact,
+            this.contactPropagation
+        ], function (err, success) {
+            if(err) return callback(err);
+            console.log("Test 7 : ", success);
+            callback(null, success)
+        });
+    }
+
+    static insertFirstContact(req, subscriber){
+        console.log('insertFirstContact');
+        return function (done) {
+            let newContact = new contactModel();
+            newContact.user = req.payload._id;
+            newContact.contactEmail = req.body.contactemail;
+            newContact.nickname = req.body.nickname || subscriber.username || '';
+            newContact.isBlocked = req.body.isBlocked || false;
+            console.log("insertFirstContact : ", newContact);
+            newContact.save(function onSave(err, contact) {
+                if (err) done(err);
+                else {
+                    console.log("TEST contact", contact);
+                    done(null, req, contact, subscriber);
+                }
+            });
+        };
+    }
+
+    static insertSecondContact(req, firstCContact, subscriber ,done){
+        console.log('insertSecondContact');
+        console.log('Inner userModel.findById : ', req.payload.email);
         let newContact = new contactModel();
-        newContact.owner = req.body.owner;
-        newContact.email = req.body.email;
-        newContact.nickname = req.body.nickname.toLowerCase();
-        newContact.isPending = req.body.isPending || true;
-        newContact.isSentOne = req.body.isSentOne || false;
-        newContact.contact = req.body.concat || null;
-        newContact.isBlocked = req.body.isBlocked || false;
-        console.log("insertContact func : ", newContact);
-        return newContact.save(function onSave(err, contact) {
-            if (err) callback(err);
-            else {
-                console.log("TEST contact", contact);
-                return callback(null, contact);
+        console.log('subscriber : ', subscriber);
+        console.log('subscriber type 1 : ', typeof subscriber);
+        console.log('subscriber type 2 : ', subscriber === null);
+        newContact.user = subscriber === null ?  null : subscriber._id ;
+        console.log('subscriber : ', subscriber);
+        newContact.contactEmail = req.payload.email;
+        newContact.nickname = req.payload.username || '';
+        newContact.isBlocked = false;
+        console.log("insertSecondContact  : ", newContact);
+        newContact.save(function OnSave(err, secondContact) {
+            if(err) console.log('Here : ', err);
+            else{
+                console.log('Here 2 ', req.payload.email);
+                done(null, firstCContact, secondContact);
             }
-        })
+        });
+    }
+
+    static contactPropagation(firstCContact, secondContact, done) {
+        console.log('insertSecondContact');
+        let relation = new contactRelation();
+        relation.user = firstCContact._id;
+        relation.userContact = secondContact._id;
+        relation.isPending = true;
+        relation.token = '';
+        relation.save(function OnSave(err, contactRelation) {
+            if(err) console.log('Here : ', err);
+            else{
+                console.log('Here 2 ', contactRelation);
+                done(null, contactRelation);
+            }
+        });
     }
 };
 
