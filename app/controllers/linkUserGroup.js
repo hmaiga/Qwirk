@@ -181,8 +181,8 @@ var linkUserGroupController = {
                         }
 
                         if (params.isPublic === true) {
-                            if(params.members.length === parseInt(u+1)) {
-                                var newLink = new linkUserGroupModel({group: params._id, user: params.members[u]._id, isPending: false, isKicked: false, isBanned: false, isAccepted: false })
+                            if(params.members.length === parseInt(u) + 1) {
+                                var newLink = new linkUserGroupModel({group: params._id, user: membersId[u], isPending: false, isKicked: false, isBanned: false, isAccepted: false })
                                 newLink.save(function onSaveLink(err) {
                                     if (err) {
                                         return callback(err)
@@ -195,10 +195,14 @@ var linkUserGroupController = {
                                 })
                             }
                             else {
-                                var newLink = new linkUserGroupModel({group: params._id, user: params.members[u]._id, isPending: false, isKicked: false, isBanned: false, isAccepted: false })
+                                var newLink = new linkUserGroupModel({group: params._id, user: membersId[u], isPending: false, isKicked: false, isBanned: false, isAccepted: false })
                                 newLink.save(function onSaveLink(err) {
                                     if (err) {
+                                        console.log('errrrrrrr')
                                         return callback(err)
+                                    }
+                                    else {
+                                        console.log('CONTINUE')
                                     }
 
                                 })

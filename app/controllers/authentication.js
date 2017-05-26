@@ -8,6 +8,7 @@ let mime = require('mime');
 let User = require('./../models').user;
 let Status = mongoose.model('Status');
 let async = require('async');
+let path = require('path');
 
 let logger = require("./../helpers/logger");
 let statusController = require("../controllers").status;
@@ -25,7 +26,7 @@ class authentication {
                 let user = new User();
 
                 logger.debug(status);
-                let imgPath = "./../assets/img/qwirk.jpg" ;
+                let imgPath = path.join(__dirname, '..', 'assets', 'img', 'qwirk.jpg') ;
                 user.firstName = req.body.firstName;
                 user.lastName = req.body.lastName;
                 user.email = req.body.email;
@@ -44,7 +45,7 @@ class authentication {
                 user.profilePicture.data = fs.readFileSync(imgPath);
                 user.profilePicture.contentType = mime.lookup(imgPath);
 
-                user.save(function(err) {
+                user.save(function(err, u) {
                     let token;
                     if (err) {
                         console.log(err);
@@ -55,7 +56,8 @@ class authentication {
                     token = user.generateJwt();
                     res.status(200);
                     res.json({
-                        "token" : token
+                        "token" : token,
+                        "user_id" : u._id
                     });
                 });
             }], function (err) {
