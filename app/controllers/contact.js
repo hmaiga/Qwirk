@@ -17,8 +17,9 @@ let logger = require('./../helpers/logger');
 class contactController {
     static getContacts(params, callback) {
         console.log("Test params ", params.payload._id);
+        console.log("Contact email : " + params.payload.email);
         let customContact  = [];
-        return ContactRelation.find({$or:[ {userEmail : params.payload.email}]}).lean().exec(function (err, contacts) {
+        return ContactRelation.find({$or:[ {userEmail : params.payload.email}, {userContactEmail : params.payload.email}]}).lean().exec(function (err, contacts) {
             console.log("TEST contacts ", contacts);
             let countOccur = contacts.length;
             if(err) return callback(err);
@@ -28,27 +29,34 @@ class contactController {
                     let ctt = contacts[contt];
                     console.log('ctt : ', ctt);
                     for(var key in ctt) {
-                        if(key === 'user') {
+                        if(key === '_id') {
                             console.log('ctt key is : ', ctt[key]);
-                            let contactId = ctt[key];
-                            Contact.findById(contactId, function (err, contact) {
+                            let relationId = ctt[key];
+                            Contact.find({relationId : relationId}, function (err, contact) {
                                 console.log('uSER : ', contact);
                                 if(err) {
                                     console.log('Error in getContacts line : 33');
                                 }
                                 else{
-                                    ctt['contactObject'] = contact;
-                                    for(var u in contact) {
+                                    let rightContact ;
+                                    for(var rightOne in contact) {
+                                        if(contact[rightOne].contactEmail !== params.payload.email) {
+                                            rightContact = contact[rightOne];
+                                            console.log('Right contact : ', rightContact);
+                                        }
+                                    }
+                                    console.log('Right contact : ', rightContact);
+                                    ctt['contactObject'] = rightContact;
+                                    for(var u in rightContact) {
                                         if(u == 'user'){
-                                            userModel.findById(contact.user, function (err, user) {
+                                            userModel.findById(rightContact.user, function (err, user) {
                                                 if(err) {
-                                                    console.log('Error in getContacts line : 46');
+                                                    console.log('Error in getContacts line : 52');
                                                 }
                                                 else {
                                                     ctt['userObject'] = user;
                                                     customContact.push(ctt);
                                                     countOccur--;
-                                                    console.log('customContact Test 2 : ', customContact);
                                                     if (countOccur === 0) return callback(null, customContact);
                                                 }
                                             });
