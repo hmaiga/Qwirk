@@ -150,7 +150,7 @@ var groupController = {
             else {
                 return callback(null, arrayGroups)
             }
-        })
+        }).populate('members')
     },
     
     updateGroup: function updateGroup(params, callback) {
