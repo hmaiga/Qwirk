@@ -46,7 +46,7 @@ class authentication {
                 user.profilePicture.data = fs.readFileSync(imgPath);
                 user.profilePicture.contentType = mime.lookup(imgPath);
 
-                user.save(function(err) {
+                user.save(function(err, u) {
                     let token;
                     if (err) {
                         console.log(err);
@@ -57,7 +57,8 @@ class authentication {
                     token = user.generateJwt();
                     res.status(200);
                     res.json({
-                        "token" : token
+                        "token" : token,
+                        "user_id" : u._id
                     });
                 });
             }], function (err) {
@@ -82,7 +83,9 @@ class authentication {
                 token = user.generateJwt();
                 res.status(200);
                 res.json({
-                    "token" : token
+                    "token" : token,
+                    "user_id" : ,
+                    "user_id" : user._id
                 });
             } else {
                 // If user is not found
