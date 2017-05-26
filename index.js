@@ -31,7 +31,7 @@ let config = require('./config');
 let configDB = config.database;
 
 let apiPort = config.infra['qwirk-api'].port;
-
+let NotificationHandler = require('./app/controllers/Utils/notificationGroupHandler');
 
 /*********************************************
  *              Db connection                *
@@ -104,6 +104,8 @@ for (let route in initRouters) {
 }
 
 let server = http.createServer(app);
+let io = require('socket.io')(server);
+
 app.use(cors());
 logger.debug("Overriding 'Express' logger");
 app.use(require('morgan')("default", { "stream": logger.stream }));
@@ -118,7 +120,7 @@ app.use(bodyParser.urlencoded({extended: false}));
 
 app.use(passport.initialize());
 
-let io = require('socket.io').listen(server);
+// let io = require('socket.io').listen(server);
 
 // Quand un client se connecte, on le note dans la console
 io.sockets.on('connection', function (socket) {
@@ -135,6 +137,9 @@ app.use(function (err, req, res, next) {
         res.json({"message" : err.name + ": " + err.message});
     }
 });
+
+let notificationGroupHandler = new NotificationHandler(io);
+notificationGroupHandler.init();
 
 app.listen(apiPort, function listening(){
     debug_w('Express server listening on port ' + apiPort);
