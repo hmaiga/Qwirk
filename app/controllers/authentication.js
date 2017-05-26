@@ -4,10 +4,7 @@
 let passport = require('passport');
 let mongoose = require('mongoose');
 let fs = require('fs');
-<<<<<<< 4f74df2aff43c9929aa82b1f4aa8118eaba5e3b2
 let path = require('path');
-=======
->>>>>>> Add Upload User Profile Feature
 let mime = require('mime');
 let User = require('./../models').user;
 let Status = mongoose.model('Status');
