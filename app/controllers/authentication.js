@@ -84,7 +84,6 @@ class authentication {
                 res.status(200);
                 res.json({
                     "token" : token,
-                    "user_id" : ,
                     "user_id" : user._id
                 });
             } else {
