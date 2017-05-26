@@ -31,25 +31,30 @@ class contactController {
                         if(key === 'user') {
                             console.log('ctt key is : ', ctt[key]);
                             let contactId = ctt[key];
-                            Contact.findById(contactId, function (err, user) {
-                                console.log('uSER : ', user);
+                            Contact.findById(contactId, function (err, contact) {
+                                console.log('uSER : ', contact);
                                 if(err) {
                                     console.log('Error in getContacts line : 33');
                                 }
                                 else{
-                                    for(var u in user) {
-                                        if(u === 'isBlocked' || u === 'nickname' || u == 'user'){
-                                            ctt[(u === 'user' ? 'userId' : u)] = user[u];
-                                            // ctt.push({
-                                            //     key : u === 'user' ? 'userId' : u,
-                                            //     value : user[u]
-                                            // });
+                                    ctt['contactObject'] = contact;
+                                    for(var u in contact) {
+                                        if(u == 'user'){
+                                            userModel.findById(contact.user, function (err, user) {
+                                                if(err) {
+                                                    console.log('Error in getContacts line : 46');
+                                                }
+                                                else {
+                                                    ctt['userObject'] = user;
+                                                    customContact.push(ctt);
+                                                    countOccur--;
+                                                    console.log('customContact Test 2 : ', customContact);
+                                                    if (countOccur === 0) return callback(null, customContact);
+                                                }
+                                            });
                                         }
                                     }
-                                    customContact.push(ctt);
-                                    countOccur--;
-                                    console.log('customContact Test 2 : ', customContact);
-                                    if (countOccur === 0) return callback(null, customContact);
+
                                 }
                             });
                         }
