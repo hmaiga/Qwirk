@@ -153,12 +153,12 @@ var userController = {
         }
     },
 
-    findUserById : function (id, callback) {
-        return userModel.findById(id, function (err, user) {
-            if(err) return callback(err);
-            if(!user) return callback ('User doesn\'t exist')
-            else {
-                return callback(null, user);
+    findUserById : function (id, callback) {
+        return userModel.findById(id, function (err, user) {
+            if(err) return callback(err);
+            if(!user) return callback ('User doesn\'t exist')
+            else {
+                return callback(null, user);
             }
         })
     },
