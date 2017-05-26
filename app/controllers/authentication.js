@@ -4,7 +4,10 @@
 let passport = require('passport');
 let mongoose = require('mongoose');
 let fs = require('fs');
+<<<<<<< 4f74df2aff43c9929aa82b1f4aa8118eaba5e3b2
 let path = require('path');
+=======
+>>>>>>> Add Upload User Profile Feature
 let mime = require('mime');
 let User = require('./../models').user;
 let Status = mongoose.model('Status');
@@ -27,8 +30,7 @@ class authentication {
 
                 logger.debug(status);
                 //Todo : Change hard coded image path in order to avoid error
-                //let imgPath = path.join(__dirname, 'assets/img/qwirk.jpg');
-                let imgPath = 'D:/Users/Supinfo/4PJT/Sources/Qwirk/app/assets/img/qwirk.jpg';
+                let imgPath = 'D:/Users/jngue/WebstormProjects/Qwirk/app/assets/img/qwirk.jpg';
                 user.firstName = req.body.firstName;
                 user.lastName = req.body.lastName;
                 user.email = req.body.email;
@@ -44,8 +46,8 @@ class authentication {
                 user.isModerator = req.body.isModerator || false;
                 user.resetPasswordExpires = null;
                 user.resetPasswordToken = null;
-                user.profilePicture.data = req.body.profilePicture || fs.readFileSync(imgPath);
-                user.profilePicture.contentType = mime.lookup(req.body.profilePic) || mime.lookup(imgPath);
+                user.profilePicture.data = fs.readFileSync(imgPath);
+                user.profilePicture.contentType = mime.lookup(imgPath);
 
                 user.save(function(err) {
                     let token;

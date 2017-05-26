@@ -8,6 +8,9 @@ let jwt = require('express-jwt');
 
 let config = require('./../../config/');
 
+let multer = require('multer');
+let upload = multer();
+
 let PARAM = config.secret;
 let auth = jwt({
     secret: config.secret['PARAM'].secret,
@@ -204,6 +207,52 @@ let userRouters = function userRouters(router) {
     router.route('/id/:user_id')
         .get(function (req, res) {
             return userController.findUserById(req.params.user_id, function (err, user) {
+                if(err) return res.status(404).send(err);
+                else {
+                    res.status(200).send(user);
+                }
+            })
+        });
+
+    router.route('/uploadUserPic')
+        .post(auth, function (req, res) {
+            var storage = multer.diskStorage({
+                destination: 'D:/Users/jngue/WebstormProjects/Qwirk/app/assets/img'
+            });
+            var upload = multer({
+                storage: storage
+            }).any();
+
+            upload(req, res, function(err) {
+                if (err) {
+                    console.log(err);
+                    return res.end('Error');
+                } else {
+                    console.log('body : ', req.body);
+                    req.files.forEach(function(item) {
+                        console.log('Item : ', item);
+                        // move your file to destination
+                        return userController.setUserProfile(req, res, item, function (err, user) {
+                            if(err) return res.status(500).send(err);
+                            if(typeof user === "string") return res.status(500).send(user);
+                            res.status(200).send("Success");
+                        })
+                    });
+                    res.end('File uploaded');
+                }
+            });
+            console.log(req);
+            res.status(200).send("Success");
+           /*return userController.setUserProfile(req, res, function (err, user) {
+               if(err) return res.status(500).send(err);
+               if(typeof user === "string") return res.status(500).send(user);
+               res.status(200).send("Success");
+           })*/
+        });
+
+    router.route('/userContact/:email')
+        .get(function (req, res) {
+            return userController.findUserByEmail(req.params.email, function (err, user) {
                 if(err) return res.status(404).send(err);
                 else {
                     res.status(200).send(user);
