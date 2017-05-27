@@ -106,7 +106,11 @@ for (let route in initRouters) {
 
 let server = http.createServer(app);
 let io = require('socket.io')(server);
+let ExpressPeerServer = require('peer').ExpressPeerServer;
 
+let  options = {
+    debug: false
+};
 app.use(cors());
 logger.debug("Overriding 'Express' logger");
 app.use(require('morgan')("default", { "stream": logger.stream }));
@@ -118,6 +122,18 @@ app.use(function setResponseHeader(req, res, next){
 });
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
+
+
+app.use('/peerjs', ExpressPeerServer(server, options));
+
+server.on('connection', function(id) {
+    console.log('peer connection id : ', id);
+});
+
+server.on('disconnect', function(id) {
+    console.log('peer disconnect id : ', id);
+});
+
 
 app.use(passport.initialize());
 
