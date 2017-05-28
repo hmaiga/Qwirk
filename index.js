@@ -30,7 +30,7 @@ let logger = require("./app/helpers/logger");
 let config = require('./config');
 let configDB = config.database;
 
-let apiPort = config.infra['qwirk-api'].port;
+let apiPort = config.infra['qwirk-api'].port || process.env.VCAP_APP_PORT;;
 let MessageHandler = require('./app/controllers/Utils/messageHandler');
 
 

@@ -15,6 +15,10 @@
     "Messenger",
     "Qwirk"
   ],
+  "engines": {
+    "node": "7.6.0",
+    "npm": "4.3.0"
+  },
   "dependencies": {
     "amqp": "^0.2.6",
     "amqplib": "^0.5.1",
