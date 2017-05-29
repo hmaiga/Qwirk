@@ -76,6 +76,12 @@ let messageStatusController = {
             (err) ? callback(err)
                 : callback(null, result);
         })
+    },
+    findStatusById : function (id, callback) {
+        return messageStatusModel.findById(id, function (err, result) {
+            (err) ? callback(err)
+                : callback(null, result);
+        })
     }
 }
 

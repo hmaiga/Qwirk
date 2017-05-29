@@ -83,6 +83,7 @@ class MessageHandler {
             self.rabbiMqBindSub(socket);
             self.onMessageToRoom(socket);
             self.onNotification(socket);
+            self.updateMessageStatus(socket);
             self.roomName = room;
             console.log('Join room success', room, self.roomName, self.numClients);
         })
@@ -112,6 +113,11 @@ class MessageHandler {
     socketEmitter(socket, room, event, message) {
         console.log('Socket Emitter', room, event, message);
         socket.broadcast.to(room).emit(event, message);
+    }
+
+    socketAllEmitter(socket, room, event, message) {
+        console.log('Socket Emitter', room, event, message);
+        socket.in(room).emit(event, message);
     }
 
     getContactPromise(id) {
@@ -200,6 +206,20 @@ class MessageHandler {
         message.content = text;
         console.log('RabbitMQ Publisher', this.roomName, message);
         this.chatExchange.publish(this.roomName, message);
+    }
+
+    updateMessageStatus(socket) {
+        let self = this;
+        socket.on("updateStatus", function (message) {
+            //console.log("T'm in update status");
+            messageController.updateMessageStatus(message, function (err, message) {
+                console.log("T'm in update status", message);
+                if(err) console.log(err);
+                else {
+                    self.socketAllEmitter(socket, self.roomName, "updateStatus", message);
+                }
+            });
+        })
     }
 }
 
