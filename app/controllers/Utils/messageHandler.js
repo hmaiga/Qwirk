@@ -42,7 +42,7 @@ class MessageHandler {
     socketConnection(socket) {
         this.onDisconnectNameSpace(socket);
         this.joinContactChannel(socket);
-        console.log("New connection on socket io");
+        //console.log("New connection on socket io");
     }
 
     joinContactsChannels(socket) {
@@ -69,7 +69,7 @@ class MessageHandler {
     joinContactChannel(socket) {
         let self = this;
         socket.on('room', function (room) {
-            console.log('Bind room join');
+            //console.log('Bind room join');
             //socket.disconnect();
             //self.leaveAllRooms(socket);
             socket.join(room);
@@ -85,7 +85,7 @@ class MessageHandler {
             self.onNotification(socket);
             self.updateMessageStatus(socket);
             self.roomName = room;
-            console.log('Join room success', room, self.roomName, self.numClients);
+            //console.log('Join room success', room, self.roomName, self.numClients);
         })
     }
 
@@ -111,13 +111,18 @@ class MessageHandler {
     }
 
     socketEmitter(socket, room, event, message) {
-        console.log('Socket Emitter', room, event, message);
+        //console.log('Socket Emitter', room, event, message);
         socket.broadcast.to(room).emit(event, message);
     }
 
     socketAllEmitter(socket, room, event, message) {
-        console.log('Socket Emitter', room, event, message);
+        //console.log('Socket Emitter', room, event, message);
         socket.in(room).emit(event, message);
+    }
+
+    socketEmitterOnNsp(socket, event, message) {
+        console.log(this.io.sockets);
+        this.io.sockets.emit(event, message);
     }
 
     getContactPromise(id) {
@@ -152,8 +157,9 @@ class MessageHandler {
             messageController.addMessage(text, function (err, result) {
                 if(err) console.error(err);
                 else {
-                    console.log(result);
+                    //console.log(result);
                     self.socketEmitter(socket, self.roomName, self.roomName, result);
+                    self.socketEmitterOnNsp(socket, "newMessage", result);
                 }
             })
         })
@@ -161,18 +167,18 @@ class MessageHandler {
 
     onNotification(socket) {
         let self = this;
-        console.log('isTyping binding event');
+        //console.log('isTyping binding event');
         socket.on('isTyping', function (text) {
-            console.log('isTyping emitting to client');
+            //console.log('isTyping emitting to client');
             self.socketEmitter(socket, self.roomName, 'isTyping', text);
         })
     }
 
     onBlurNotification(socket) {
         let self = this;
-        console.log('isTyping blur event');
+        //console.log('isTyping blur event');
         socket.on('isTyping', function (text) {
-            console.log('isTyping emitting to client');
+            //console.log('isTyping emitting to client');
             self.socketEmitter(socket, self.roomName, 'isTyping', '');
         })
     }
@@ -183,14 +189,14 @@ class MessageHandler {
             exclusive: true
         }, function(q) {
             //Bind to chatExchange w/ "#" or "" binding key to listen to all messages.
-            console.log('RabbitMQ Queue Bind', q.name, self.roomName);
+            //console.log('RabbitMQ Queue Bind', q.name, self.roomName);
             q.bind(self.roomName, self.roomName, function (res) {
-                console.log("Bind ok");
+                //console.log("Bind ok");
             });
-            console.log('RabbitMQ Subscriber After binding', q.name);
+            //console.log('RabbitMQ Subscriber After binding', q.name);
             //Subscribe When a message comes, send it back to browser
             q.subscribe(function(message) {
-                console.log('RabbitMQ Subscriber', q.name, message);
+                //console.log('RabbitMQ Subscriber', q.name, message);
                 self.socketEmitter(socket, self.roomName, self.roomName, message);
             });
         });
@@ -204,7 +210,7 @@ class MessageHandler {
         message.queue = this.roomName;
         message.typeMessage = null;
         message.content = text;
-        console.log('RabbitMQ Publisher', this.roomName, message);
+        //console.log('RabbitMQ Publisher', this.roomName, message);
         this.chatExchange.publish(this.roomName, message);
     }
 
@@ -213,10 +219,10 @@ class MessageHandler {
         socket.on("updateStatus", function (message) {
             //console.log("T'm in update status");
             messageController.updateMessageStatus(message, function (err, message) {
-                console.log("T'm in update status", message);
+                //console.log("T'm in update status", message);
                 if(err) console.log(err);
                 else {
-                    self.socketAllEmitter(socket, self.roomName, "updateStatus", message);
+                    self.socketEmitter(socket, self.roomName, "updateStatus", message);
                 }
             });
         })

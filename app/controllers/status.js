@@ -3,9 +3,11 @@
  */
 var statusModel = require('./../models').status;
 let User = require('./../models').user;
+
 let async = require('async');
 
 let logger = require("./../helpers/logger");
+let USER_STATUSES = require("./Utils/global_variables").USER_STATUSES;
 
 
 var statusController = {
@@ -46,6 +48,20 @@ var statusController = {
                 })
             }
         ]);
+    },
+
+    initUserStatuses : function (callback) {
+        statusController.getStatuses(null, function (err, result) {
+            if (!result || !result.length || result.length <= 0) {
+                for (let userSts of USER_STATUSES) {
+                    console.log(userSts);
+                    statusController.addStatus(userSts, callback);
+                }
+            }
+            else {
+                callback(new Error("Already in database"));
+            }
+        })
     },
 
     updateUserStatus: function (req, res, next) {

@@ -2,7 +2,7 @@
  * Created by TBS on 26/02/2017.
  */
 let messageStatusModel = require('./../models').messageStatus
-let MESSAGE_STATUSES = require('./Utils/global_variables');
+let MESSAGE_STATUSES = require('./Utils/global_variables').MESSAGE_STATUSES;
 
 let messageStatusController = {
     addMessageStatus: function addMessageStatus(params, callback) {

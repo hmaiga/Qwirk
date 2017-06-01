@@ -25,9 +25,10 @@ class restorePass {
                 });
             },
             function(token, done) {
+                console.log(req.body);
                 if (helper.validateEmail(req.body.userIdentifier)) {
-                    User.findOne({email: req.body.userIdentifier}, function (err, user) {
-                        if (!user) {
+                    User.findOneAndUpdate({email: req.body.userIdentifier}, {resetPasswordToken : token, resetPasswordExpires : Date.now() + (3600000 * 12)}, function (err, user) {
+                        /*if (!user) {
                             res.status(404).json(err);
                             //req.flash('error', 'No account with that email address exists.');
                             return res.redirect('/forgot');
@@ -35,31 +36,35 @@ class restorePass {
 
                         user.resetPasswordToken = token;
                         user.resetPasswordExpires = Date.now() + (3600000 * 12); // 12 hours
-
+                         */
                         //userController.updateUser(user, done)
-
-                        user.save(function (err) {
+                        console.log(user);
+                        done(err, token, user);
+                        /*user.save(function (err) {
                             done(err, token, user);
-                        });
+                        });*/
                     });
                 }
                 else {
-                    User.findOne({username: req.body.userIdentifier}, function (err, user) {
-                        if (!user) {
+                    User.findOneAndUpdate({username: req.body.userIdentifier}, {resetPasswordToken : token, resetPasswordExpires : Date.now() + (3600000 * 12)}, function (err, user) {
+                        /*if (!user) {
                             res.status(404).json(err);
                             //req.flash('error', 'No account with that email address exists.');
                             return res.redirect('/forgot');
                         }
                         user.resetPasswordToken = token;
                         user.resetPasswordExpires = Date.now() + (3600000 * 12); // 12 hour
-                        user.save(function (err) {
+                        userForgot = user;*/
+
+                        console.log(user);
+                        done(err, token, user);
+                        /*user.save(function (err) {
                             logger.debug(token);
                             done(err, token, user);
-                        });
+                        });*/
                     });
                 }
             },
-
             function (token, user, done) {
                 let googleUrl = new GoogleUrl( { key: 'AIzaSyAnA5qIoiO2yl32FTbMTcMnlt7BUjzrEKc' });
                 let resetUrl = 'http://' + req.headers.host + '/reset/' + token;
@@ -89,8 +94,8 @@ class restorePass {
                 logger.debug(mailOptions.text);
                 smtpTransport.sendMail(mailOptions, function(err) {
                     //req.flash('info', 'An e-mail has been sent to ' + user.email + ' with further instructions.');
-                    done(err, 'done');
                     res.status(200).json(user);
+                    done(err, 'done');
                 });
             }
         ], function(err) {
@@ -148,8 +153,8 @@ class restorePass {
 
     static reset (req, res) {
         User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
-            logger.debug(!user._id);
-            if (!user._id) {
+            logger.debug(!user);
+            if (!user) {
                 return res.redirect('http://localhost:3000/login');
             }
             return res.redirect('http://localhost:3000/reset?reset_token=' + req.params.token);
