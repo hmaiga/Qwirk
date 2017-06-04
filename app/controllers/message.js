@@ -140,7 +140,14 @@ let messageController = {
                 return callback(null, removedMessage)
             }
         })
-    }
+    },
+
+    findMessagesByReceiver: function (req, callback) {
+        return messageModel.find({"receiverUser": {$elemMatch: {_id : req.payload._id}}}, function (err, messages) {
+            if (err) return callback(err);
+            return callback(null, messages);
+        })
+    } 
 }
 
 module.exports = messageController;

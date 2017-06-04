@@ -4,7 +4,16 @@
 /**
  * Created by TBS on 21/02/2017.
  */
-var messageController = require('./../controllers').message
+let jwt = require('express-jwt')
+
+let config = require('./../../config/');
+let messageController = require('./../controllers').message
+
+
+let auth = jwt({
+    secret: config.secret['PARAM'].secret,
+    userProperty: 'payload'
+});
 
 var messageRouters = function messageRouters(router) {
     router.route('/messages/:contact/:start/:limit')
@@ -42,6 +51,15 @@ var messageRouters = function messageRouters(router) {
                 if (err) return res.status(500).send(err)
                 else {
                     res.status(200).send(messages)
+                }
+            })
+        })
+    router.route('/getSendMessages')
+        .get(auth, function (req, res) {
+            return messageController.findMessagesByReceiver(req, function (err, messages) {
+                if(err) return res.status(404).send(err)
+                else {
+                    res.status(200).send(messages);
                 }
             })
         })
