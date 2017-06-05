@@ -103,8 +103,20 @@ for (let route in initRouters) {
     initRouters[route](router);
 }
 
+
 let server = http.createServer(app);
 let io = require('socket.io')(server);
+// io.set('origins', 'http://localhost:* http://127.0.0.1:*')
+// let io = require('socket.io').listen(server);
+
+// Quand un client se connecte, on le note dans la console
+
+let notificationGroupHandler = new NotificationHandler(io);
+notificationGroupHandler.init();
+
+// io.sockets.on('connection', function (socket) {
+//     console.log('Un client est connecté !');
+// });
 
 app.use(cors());
 logger.debug("Overriding 'Express' logger");
@@ -113,6 +125,7 @@ app.use(function setResponseHeader(req, res, next){
     res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
     res.header('Expires', '-1');
     res.header('Pragma', 'no-cache');
+    // res.header('Access-Control-Allow-Origin', "http://localhost:3000");
     return next();
 });
 app.use(bodyParser.json());
@@ -120,12 +133,6 @@ app.use(bodyParser.urlencoded({extended: false}));
 
 app.use(passport.initialize());
 
-// let io = require('socket.io').listen(server);
-
-// Quand un client se connecte, on le note dans la console
-io.sockets.on('connection', function (socket) {
-    console.log('Un client est connecté !');
-});
 
 app.use(router);
 
@@ -138,10 +145,9 @@ app.use(function (err, req, res, next) {
     }
 });
 
-let notificationGroupHandler = new NotificationHandler(io);
-notificationGroupHandler.init();
 
-app.listen(apiPort, function listening(){
+
+server.listen(apiPort, function listening(){
     debug_w('Express server listening on port ' + apiPort);
 });
 

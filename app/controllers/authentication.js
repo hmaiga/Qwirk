@@ -82,7 +82,8 @@ class authentication {
                 token = user.generateJwt();
                 res.status(200);
                 res.json({
-                    "token" : token
+                    "token" : token,
+                    "user_id" : user._id
                 });
             } else {
                 // If user is not found
