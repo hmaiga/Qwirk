@@ -3,8 +3,12 @@
  */
 let messageModel = require('./../models').message
 let messageStatusController = require('./messageStatus');
+let FileController = require('./fileController');
 let async = require('async');
 let amqp = require('amqplib/callback_api');
+let multer = require('multer');
+let upload = multer();
+let mime = require('mime');
 
 let messageController = {
     addMessage: function addMessage(params, callback) {
@@ -17,7 +21,7 @@ let messageController = {
             },
             function () {
                 let newMessage = new messageModel(params);
-                console.log("New message : ", newMessage, params);
+                //console.log("New message : ", newMessage, params);
                 return newMessage.save(function onSaveMessage(err, savedMessage) {
                     if (err) return callback(err)
                     else {
@@ -34,6 +38,46 @@ let messageController = {
         })
     },
 
+    addMediaMessage : function (req, res, app, callback) {
+        let fc = new FileController(app);
+        //console.log("Start messages : ", req.files);
+        async.waterfall([
+            function (done) {
+                for (let i in req.body) {
+                    //console.log("All is fine");
+                    req.body[i] = JSON.parse(req.body[i]);
+                }
+                //console.log("Done messages Status : ", req.body.messageStatus.status);
+                req.body.messageStatus.status = "sent";
+                messageStatusController.findStatusByName(req.body.messageStatus.status, function (err, status) {
+                    req.body.messageStatus = status;
+                    done(err);
+                })
+            },
+            function (done) {
+                //console.log("Done messages : ", req.files);
+                fc.uploadFile(req, res, done)
+            },
+            function (filename, done) {
+                //console.log("Req body", req.body);
+                let newMessage = new messageModel(req.body);
+                newMessage.media.filename = filename;
+                newMessage.media.contentType = mime.lookup(filename);
+                return newMessage.save(function onSaveMessage(err, savedMessage) {
+                    if (err) return callback(err)
+                    else {
+                        if (err) return callback(err)
+                        else {
+                            return callback(null, savedMessage)
+                        }
+                    }
+                })
+            }
+        ], function(err) {
+            if (err) return callback(err);
+        })
+    },
+
     updateMessageStatus : function (params, callback) {
         async.waterfall([
             function (done) {
@@ -44,12 +88,12 @@ let messageController = {
             },
             function () {
                 let newMessage = new messageModel(params);
-                console.log("Update message status controllers ********", params);
+                //console.log("Update message status controllers ********", params);
                 messageModel.findByIdAndUpdate(params._id, { $set: { messageStatus: params.messageStatus }}, function onSaveMessage(err, savedMessage) {
-                    console.log("Update message status controllers findByIdAndUpdate", params);
+                    //console.log("Update message status controllers findByIdAndUpdate", params);
                     if (err) return callback(err)
                     else {
-                        console.log("Update message status controllers", savedMessage);
+                        //console.log("Update message status controllers", savedMessage);
                         return callback(null, savedMessage)
                     }
                 })
@@ -61,7 +105,7 @@ let messageController = {
     },
 
     getMessages: function getMessages(params, callback) {
-        console.log('Get Messages');
+        //console.log('Get Messages');
         async.waterfall([
             function (done) {
                 return messageStatusController.getMessageStatuses(null, function (err, msgStatuses) {
@@ -70,7 +114,7 @@ let messageController = {
             },
             function (msgStatuses, done) {
 
-                console.log("Get messages", msgStatuses);
+                //console.log("Get messages", msgStatuses);
                 return messageModel.find({contact : params.contact})
                     .skip(parseInt(params.start))
                     .limit(parseInt(params.limit))
@@ -98,7 +142,7 @@ let messageController = {
             }
         ], function(err) {
             //console.log(err.json());
-            //res.status(500).json(err)
+            //res.status(500).json(err);
             callback(err);
         });
         /*

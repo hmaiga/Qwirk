@@ -11,16 +11,20 @@ let userController = require('./../../controllers').user;
 let messageController = require('./../../controllers').message;
 
 class MessageHandler {
-    constructor(io, user) {
+    constructor(io, ss, user) {
         this.io = io;
         this.user = user;
+        this.ss = ss;
         this.contactNsp = this.io.of('/privatePeer2Peer');
 
         this.rabbitConn = amqp.createConnection({url: "amqp://localhost"});
         this.chatExchange;
         this.roomName = "";
+        this.roomsName = {};
         this.numClients = {};
         this.socketId = "";
+        this.actualUser = "";
+        this.socket;
     }
     init() {
         console.log("Init socket io");
@@ -68,23 +72,27 @@ class MessageHandler {
 
     joinContactChannel(socket) {
         let self = this;
-        socket.on('room', function (room) {
-            //console.log('Bind room join');
+        self.socket = socket;
+        socket.on('room', function (userRoom) {
+            //console.log('Bind room join', userRoom);
             //socket.disconnect();
             //self.leaveAllRooms(socket);
-            socket.join(room);
-            socket.room = room;
+            //console.log('Join room success', userRoom.room, userRoom.user);
+            socket.join(userRoom.room);
+            socket.room = userRoom.room;
+            socket.user = userRoom.user;
 
-            if (self.numClients[room] == undefined) {
-                self.numClients[room] = 1;
+            if (self.numClients[userRoom.room] == undefined) {
+                self.numClients[userRoom.room] = 1;
             } else {
-                self.numClients[room]++;
+                self.numClients[userRoom.room]++;
             }
             self.rabbiMqBindSub(socket);
             self.onMessageToRoom(socket);
             self.onNotification(socket);
             self.updateMessageStatus(socket);
-            self.roomName = room;
+            self.roomsName[userRoom.user] = userRoom.room;
+            self.roomName = userRoom.room;
             //console.log('Join room success', room, self.roomName, self.numClients);
         })
     }
@@ -92,10 +100,10 @@ class MessageHandler {
     onDisconnectNameSpace(socket) {
         let self = this;
         socket.on('disconnect', function (e) {
-            if (self.numClients[self.roomName] == 0) {
-                self.numClients[self.roomName] = undefined;
-            } else if (self.numClients[self.roomName] == 0) {
-                self.numClients[self.roomName]--;
+            if (self.numClients[self.roomsName[socket.user]] == 0) {
+                self.numClients[self.roomsName[socket.user]] = undefined;
+            } else if (self.numClients[self.roomsName[socket.user]] == 0) {
+                self.numClients[self.roomsName[socket.user]]--;
             }
             //self.leaveAllRooms(socket);
             socket.disconnect();
@@ -117,11 +125,11 @@ class MessageHandler {
 
     socketAllEmitter(socket, room, event, message) {
         //console.log('Socket Emitter', room, event, message);
-        socket.in(room).emit(event, message);
+        socket.to(room).emit(event, message);
     }
 
     socketEmitterOnNsp(socket, event, message) {
-        console.log(this.io.sockets);
+        //console.log(this.io.sockets);
         this.io.sockets.emit(event, message);
     }
 
@@ -137,7 +145,7 @@ class MessageHandler {
     rabbitMqInit(exchange) {
         let self = this;
         self.rabbitConn.on('ready', function() {
-            self.chatExchange = self.rabbitConn.exchange(self.roomName, {
+            self.chatExchange = self.rabbitConn.exchange(self.roomsName[socket.user], {
                 'type': 'fanout'
             });
         });
@@ -145,10 +153,10 @@ class MessageHandler {
 
     onMessageToRoom(socket) {
         let self = this;
-        console.log('toto : ', self.roomName);
-        socket.on(self.roomName, function (text) {
+        //console.log('toto : ', self.roomsName[socket.user]);
+        socket.on(self.roomsName[socket.user], function (text) {
             self.socketId = socket.id;
-            //console.log('On Message to room', self.roomName, self.socketId, text);
+            console.log('On Message to room', self.roomsName, self.socketId, text);
             //self.rabbitMqPub(text);
 
             //let message = new messageModel(text);
@@ -157,8 +165,8 @@ class MessageHandler {
             messageController.addMessage(text, function (err, result) {
                 if(err) console.error(err);
                 else {
-                    //console.log(result);
-                    self.socketEmitter(socket, self.roomName, self.roomName, result);
+                    console.log("On message to room : ",self.roomsName[result.sender]);
+                    self.socketEmitter(socket, self.roomsName[result.sender], self.roomsName[result.sender], result);
                     self.socketEmitterOnNsp(socket, "newMessage", result);
                 }
             })
@@ -170,7 +178,7 @@ class MessageHandler {
         //console.log('isTyping binding event');
         socket.on('isTyping', function (text) {
             //console.log('isTyping emitting to client');
-            self.socketEmitter(socket, self.roomName, 'isTyping', text);
+            self.socketEmitter(socket, self.roomsName[socket.user], 'isTyping', text);
         })
     }
 
@@ -179,25 +187,25 @@ class MessageHandler {
         //console.log('isTyping blur event');
         socket.on('isTyping', function (text) {
             //console.log('isTyping emitting to client');
-            self.socketEmitter(socket, self.roomName, 'isTyping', '');
+            self.socketEmitter(socket, self.roomsName[socket.user], 'isTyping', '');
         })
     }
 
     rabbiMqBindSub(socket) {
         let self = this;
-        this.rabbitConn.queue(self.roomName, {
+        this.rabbitConn.queue(self.roomsName[socket.user], {
             exclusive: true
         }, function(q) {
             //Bind to chatExchange w/ "#" or "" binding key to listen to all messages.
             //console.log('RabbitMQ Queue Bind', q.name, self.roomName);
-            q.bind(self.roomName, self.roomName, function (res) {
+            q.bind(self.roomsName[socket.user], self.roomsName[socket.user], function (res) {
                 //console.log("Bind ok");
             });
             //console.log('RabbitMQ Subscriber After binding', q.name);
             //Subscribe When a message comes, send it back to browser
             q.subscribe(function(message) {
                 //console.log('RabbitMQ Subscriber', q.name, message);
-                self.socketEmitter(socket, self.roomName, self.roomName, message);
+                self.socketEmitter(socket, self.roomsName[socket.user], self.roomsName[socket.user], message);
             });
         });
 
@@ -222,10 +230,14 @@ class MessageHandler {
                 //console.log("T'm in update status", message);
                 if(err) console.log(err);
                 else {
-                    self.socketEmitter(socket, self.roomName, "updateStatus", message);
+                    self.socketAllEmitter(socket, self.roomsName[socket.user], "updateStatus", message);
                 }
             });
         })
+    }
+
+    getSocket() {
+        return this.socket;
     }
 }
 

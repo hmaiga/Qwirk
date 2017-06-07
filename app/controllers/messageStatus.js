@@ -71,7 +71,7 @@ let messageStatusController = {
         })
     },
     findStatusByName : function (status, callback) {
-        console.log('Is find baby');
+        console.log('Is find baby', status);
         return messageStatusModel.findOne({"status" : status}, function (err, result) {
             (err) ? callback(err)
                 : callback(null, result);
