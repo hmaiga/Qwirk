@@ -180,10 +180,7 @@ app.use(function (err, req, res, next) {
     }
 });
 
-let messageHandler = new MessageHandler(io);
 let callHandler = new CallHandler(io);
-
-messageHandler.init();
 callHandler.init();
 
 server.listen(apiPort, function listening(){
