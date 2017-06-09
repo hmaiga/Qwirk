@@ -31,8 +31,10 @@ let logger = require("./app/helpers/logger");
 let config = require('./config');
 let configDB = config.database;
 
-let apiPort = config.infra['qwirk-api'].port;
+let apiPort = config.infra['qwirk-api'].port || process.env.VCAP_APP_PORT;;
 let MessageHandler = require('./app/controllers/Utils/messageHandler');
+let PeerHandler = require('./app/controllers/Utils/peerHandler');
+let CallHandler = require('./app/controllers/Utils/callHandler');
 
 let NotificationHandler = require('./app/controllers/Utils/notificationGroupHandler');
 
@@ -122,7 +124,14 @@ notificationGroupHandler.init();
 for (let route in initRouters) {
     initRouters[route](router, app);
 }
+let ExpressPeerServer = require('peer').ExpressPeerServer;
 
+let  options = {
+    debug: true,
+    allow_discovery: true
+};
+let connected = [];
+console.log('typeof  connected = [] : > ', typeof connected);
 app.use(cors());
 logger.debug("Overriding 'Express' logger");
 app.use(require('morgan')("default", { "stream": logger.stream }));
@@ -135,6 +144,28 @@ app.use(function setResponseHeader(req, res, next){
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
+peerServer = ExpressPeerServer(server, options);
+app.use('/peerjs', peerServer);
+
+// let peerServerHandler = new PeerHandler(peerServer, server, connected);
+// peerServerHandler.init();
+peerServer.on('connection', function(id) {
+    console.log('Peer server > peer connection id : /', id);
+    let idx = connected.indexOf(id); // only add id if it's not in the list yet
+    if (idx === -1) {connected.push(id);}
+    console.log('Connected users list : ',connected);
+});
+
+peerServer.on('disconnect', function(id) {
+    console.log('Peer server > peer disconnect id : /', id);
+    let idx = connected.indexOf(id); // only attempt to remove id if it's in the list
+    if (idx !== -1) {connected.splice(idx, 1);}
+    console.log('Connected users list : ', connected);
+});
+
+server.on('disconnect', function(id) {
+    console.log(id + " disconnect");
+});
 app.use(passport.initialize());
 
 
@@ -148,6 +179,12 @@ app.use(function (err, req, res, next) {
         res.json({"message" : err.name + ": " + err.message});
     }
 });
+
+let messageHandler = new MessageHandler(io);
+let callHandler = new CallHandler(io);
+
+messageHandler.init();
+callHandler.init();
 
 server.listen(apiPort, function listening(){
     debug_w('Express server listening on port ' + apiPort);
