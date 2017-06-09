@@ -66,7 +66,7 @@ let messageController = {
             .limit(parseInt(params.limit))
             .sort([['sendTime', 'descending']])
             .exec(function onGetMessages(err, arrayMessages) {
-                console.log(arrayMessages);
+                // console.log(arrayMessages);
                 if (err) return callback(err)
                 else {
                     return callback(null, arrayMessages)

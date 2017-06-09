@@ -83,9 +83,9 @@ let userRouters = function userRouters(router) {
      // }
      // PS :Don't forget authentification token before requested
         .get(auth, function (req, res) {
-            console.log("1 GET Test Router '/contacts/:user_id' : ", req);
+            // console.log("1 GET Test Router '/contacts/:user_id' : ", req);
             return contactController.getContacts(req, function (err, contacts) {
-                console.log("2 GET Test Router '/contacts/:user_id' : ", contacts);
+                // console.log("2 GET Test Router '/contacts/:user_id' : ", contacts);
                 if(err) return res.status(500).send(err);
                 else {
                     console.log("3 GET Test Router '/contacts/:user_id' : Success");

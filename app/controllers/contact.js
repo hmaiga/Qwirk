@@ -16,24 +16,24 @@ let logger = require('./../helpers/logger');
 
 class contactController {
     static getContacts(params, callback) {
-        console.log("Test params ", params.payload._id);
-        console.log("Contact email : " + params.payload.email);
+        // console.log("Test params ", params.payload._id);
+        // console.log("Contact email : " + params.payload.email);
         let customContact  = [];
         return ContactRelation.find({$or:[ {userEmail : params.payload.email}, {userContactEmail : params.payload.email}]}).lean().exec(function (err, contacts) {
-            console.log("TEST contacts ", contacts);
+            // console.log("TEST contacts ", contacts);
             let countOccur = contacts.length;
             if(err) return callback(err);
             else{
                // let contactsDictionnary = [];
                 for(var contt in contacts) {
                     let ctt = contacts[contt];
-                    console.log('ctt : ', ctt);
+                    // console.log('ctt : ', ctt);
                     for(var key in ctt) {
                         if(key === '_id') {
-                            console.log('ctt key is : ', ctt[key]);
+                            // console.log('ctt key is : ', ctt[key]);
                             let relationId = ctt[key];
                             Contact.find({relationId : relationId}, function (err, contact) {
-                                console.log('uSER : ', contact);
+                                // console.log('uSER : ', contact);
                                 if(err) {
                                     console.log('Error in getContacts line : 33');
                                 }
@@ -42,10 +42,10 @@ class contactController {
                                     for(var rightOne in contact) {
                                         if(contact[rightOne].contactEmail !== params.payload.email) {
                                             rightContact = contact[rightOne];
-                                            console.log('Right contact : ', rightContact);
+                                            // console.log('Right contact : ', rightContact);
                                         }
                                     }
-                                    console.log('Right contact : ', rightContact);
+                                    // console.log('Right contact : ', rightContact);
                                     ctt['contactObject'] = rightContact;
                                     for(var u in rightContact) {
                                         if(u == 'user'){

@@ -16,7 +16,7 @@
     "Qwirk"
   ],
   "engines": {
-    "node": "7.6.0",
+    "node": "6.7.0",
     "npm": "4.3.0"
   },
   "dependencies": {
