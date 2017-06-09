@@ -29,14 +29,13 @@ removeLink: function removeLink (params, callback) {
 var linkUserGroupController = {
     addLinkToGroup: function addLinkToGroup(group, callback) {
         if (group.members.length !== 0) {
-            console.log("NO", group.members);
+            console.log("NO")
             if (group.isPublic === false) {
                 for(var user in group.members) {
-                    console.log("YES", group.members);
                     var newLink = new linkUserGroupModel({group: group._id, user: group.members[user]._id, isPending: true, isKicked: false, isBanned: false, isAccepted: false })
                     if(group.members.length === parseInt(user) + 1) {
                         newLink.save(function onSaveLink(err) {
-                            console.log(group.data.members[user]._id)
+                            console.log(group.members[user]._id)
                             if (err) {
                                 return callback(err)
                             }

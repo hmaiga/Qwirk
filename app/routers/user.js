@@ -28,9 +28,11 @@ let callController = require('./../controllers').call;
 let userRouters = function userRouters(router) {
     router.route('/users')
         .get(function(req, res) {
-            params = req.query.filter ? JSON.parse(req.query.filter) : {};
-            return userController.getUsers(params, function(err, users) {
-                if (err) return res.status(500).send(err)
+            // params = req.query.filter ? JSON.parse(req.query.filter) : {};
+            return userController.getUsers(req.params, function(err, users) {
+                if (err) {
+                    return res.status(500).send(err)
+                }
                 else {
                     res.status(200).send(users)
                 }
@@ -100,7 +102,7 @@ let userRouters = function userRouters(router) {
      // PS :Don't forget authentification token before requested
         .post(auth, function (req, res) {
             console.log("1 post Test Router '/contact'", req.body);
-            return contactController.addContact(req, res,function (err, userContacts) {
+            return contactController.addContact(req,function (err, userContacts) {
                 console.log("2 post Test Router '/contact' : Success", userContacts);
                 if(err) return res.status(500).send(err);
                 else {

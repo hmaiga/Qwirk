@@ -4,11 +4,11 @@
 let passport = require('passport');
 let mongoose = require('mongoose');
 let fs = require('fs');
-let path = require('path');
 let mime = require('mime');
 let User = require('./../models').user;
 let Status = mongoose.model('Status');
 let async = require('async');
+let path = require('path');
 
 let logger = require("./../helpers/logger");
 let statusController = require("../controllers").status;

@@ -25,17 +25,16 @@ createChannel: function createChannel(params, callback) {
 }
 
 createGroup: function createGroup(params, callback) {
-    /*var formerMember = params.members
-    params.members = []*/
+    var formerMember = params.members
+    params.members = []
     var newGroup = new groupModel(params)
     return newGroup.save(function onSaveGroup(err, savedGroup) {
         if (err)  {
             return callback(err)
         }
         else {
-            //params.members = formerMember
+            params.members = formerMember
             params._id = savedGroup._id
-            console.log("Create group", params);
             linkUserGroupController.addLinkToGroup(params, function(err) {
                 if (err) return callback(err, null)
                 else {
@@ -51,7 +50,7 @@ var groupController = {
     
     addGroup: function addGroup(params, callback) {
         // ici on envoie forcément soit isPublic: false, soit true
-        console.log('IN ADD GROUP ', params)
+        console.log('IN ADD GROUP ')
         let countMembers = 0;
         if (params.members.length !== 0) {
 
@@ -81,8 +80,7 @@ var groupController = {
 
                             }
 
-                            else if (params.isPublic === false) {
-                                console.log("Is not public",params)
+                            if (params.isPublic === false) {
                                 createGroup(params, function (err, savedGroup) {
                                     if (err) return callback(err)
                                     else {
@@ -90,7 +88,7 @@ var groupController = {
                                     }
                                 })
                             }
-                            else if (params.isPublic === undefined || typeof params.isPublic === 'string') {
+                            if (params.isPublic === undefined || typeof params.isPublic === 'string') {
                                 return callback('isPublic field doesn\'t exist or has not boolean value');
                             }
                         }
