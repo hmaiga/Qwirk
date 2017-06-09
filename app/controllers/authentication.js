@@ -26,7 +26,7 @@ class authentication {
                 let user = new User();
 
                 logger.debug(status);
-                let imgPath = path.join(__dirname, '..', 'assets', 'img', 'qwirk.jpg');
+                let imgPath = path.join(__dirname, '..', 'assets', 'img', 'qwirk.png');
                 user.firstName = req.body.firstName;
                 user.lastName = req.body.lastName;
                 user.email = req.body.email;
