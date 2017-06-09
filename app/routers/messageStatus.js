@@ -42,6 +42,15 @@ var messageStatusRouters = function messageStatusRouters(router) {
                 }
             })
         })
+
+    router.get('/initMessageStatuses', function (req, res) {
+        return messageStatusController.initMessageStatuses(function (err, msgStss) {
+            if(err) return res.status(500).send(err);
+            else {
+                res.status(200).send(msgStss);
+            }
+        })
+    })
 }
 
 module.exports = messageStatusRouters;

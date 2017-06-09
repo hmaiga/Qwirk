@@ -8,6 +8,9 @@ let jwt = require('express-jwt');
 
 let config = require('./../../config/');
 
+let multer = require('multer');
+let upload = multer();
+
 let PARAM = config.secret;
 let auth = jwt({
     secret: config.secret['PARAM'].secret,
@@ -18,6 +21,7 @@ let userController = require('./../controllers').user;
 let authenticationController = require('./../controllers').authentication;
 let restorePassController = require('./../controllers').restorePass;
 let contactController = require('./../controllers').contact;
+let callController = require('./../controllers').call;
 
 
 
@@ -51,9 +55,7 @@ let userRouters = function userRouters(router) {
         })
 
         .put(function(req, res) {
-            //console.log("PUT Test Router params: ", req.body)
             return userController.updateUser(req.body, function(err, updatedUser) {
-                //console.log("PUT Test Router params: ", updatedUser)
                 if (err) return res.status(500).send(err);
                 else {
                     res.status(200).send(updatedUser);
@@ -71,21 +73,34 @@ let userRouters = function userRouters(router) {
             })
         });
 
-    router.route('/contacts/:user_id')
-        .get(function (req, res) {
-            console.log("1 GET Test Router '/contacts/:user_id' : ", req.params);
-            return contactController.getContacts(req.params, function (err, contacts) {
+    router.route('/contacts')
+
+     // Use this pattern in order to find all contacts for the authenficated user
+     // GET
+     // {
+     // }
+     // PS :Don't forget authentification token before requested
+        .get(auth, function (req, res) {
+            console.log("1 GET Test Router '/contacts/:user_id' : ", req);
+            return contactController.getContacts(req, function (err, contacts) {
                 console.log("2 GET Test Router '/contacts/:user_id' : ", contacts);
                 if(err) return res.status(500).send(err);
                 else {
                     console.log("3 GET Test Router '/contacts/:user_id' : Success");
-                    res.status(400).send(contacts);
+                    res.status(200).send(contacts);
                 }
             })
         });
 
     router.route('/contact')
-        .post(function (req, res) {
+
+     // Use this pattern in order to add a new contact
+     // {
+     //     "contactemail": "test@xxxx.fr",          => contact email
+     //     "nickname" : "h.maiga"                   => contact userId
+     // }
+     // PS :Don't forget authentification token before requested
+        .post(auth, function (req, res) {
             console.log("1 post Test Router '/contact'", req.body);
             return contactController.addContact(req, res,function (err, userContacts) {
                 console.log("2 post Test Router '/contact' : Success", userContacts);
@@ -96,21 +111,15 @@ let userRouters = function userRouters(router) {
                 }
             })
         })
-        .put(function (req, res) {
-            console.log("1 post Test Router '/contacts'", req.body);
-            return contactController.addContact(req.body, function (err, userContacts) {
-                console.log("2 post Test Router 'user/contacts' : Success", userContacts);
-                if(err) return res.status(500).send(err);
-                else {
-                    console.log("3 post Test Router 'user/contacts' : Success", userContacts);
-                    res.status(400).send(userContacts);
-                }
-            })
-        })
-        .delete(function (req, res) {
-            //console.log("1 DELETE Test Router /contact : ",  req.body);
-            return contactController.removeUserContact(req.body, function (err, userContact) {
-                //console.log("2 DELETE Test Router /contacts", userContact);
+
+         // Use this pattern in order to rename a contact nickname
+         // {
+         //     "contactemail": "test@xxxx.fr",                                => contact email
+         //     "contactUserId" : "T1122465444544444444654"                   => contact userId
+         // }
+         // PS :Don't forget authentification token before requested
+        .delete(auth, function (req, res) {
+            return contactController.removeUserContact(req, function (err, userContact) {
                 if(err) return res.status(500).send(err);
                 else{
                     res.status(200).send(userContact);
@@ -118,10 +127,15 @@ let userRouters = function userRouters(router) {
             })
         });
 
+    // Use this pattern in order to rename a contact nickname
+    // {
+    //     "contactemail": "test.xxx@hotmail.fr",   => contact email
+    //     "nickname" : "h.maiga"                   => contact nickname
+    // }
+    // PS :Don't forget authentification token before requested
     router.route('/contact/rename')
-        .put(function (req, res) {
-            //console.log("1 PUT Test Router /contact/rename" ,  req.body);
-            contactController.renameUserContact(req.body, function (err, userContact) {
+        .put(auth, function (req, res) {
+            contactController.renameUserContact(req, function (err, userContact) {
                 console.log("1 PUT Test Router /contact/rename", userContact);
                 if(err) return res.status(500).send(err);
                 else{
@@ -130,10 +144,16 @@ let userRouters = function userRouters(router) {
             })
         });
 
+     // Use this pattern in order to block a contact
+     // {
+     //     "contactemail": "test.xx@hotmail.fr",     => contact email
+     //     "isBlocked" : true                        => set block field to true
+     // }
+     // PS :Don't forget authentification token before requested
     router.route('/contact/block')
-    .put(function (req, res) {
-        //console.log("1 PUT Test Router /contact/block", req.body);
-        contactController.blockContact(req.body, function (err, contact) {
+    .put(auth, function (req, res) {
+        console.log("1 PUT Test Router /contact/block", req.body);
+        contactController.blockContact(req, function (err, contact) {
                 //console.log("2 PUT Test Router /contact/block", req.body);
                 if(err) return res.status(500).send(err);
                 else {
@@ -150,7 +170,6 @@ let userRouters = function userRouters(router) {
                 res.status(200).send("Success");
             })
         });
-
     router.route('/user/:username')
         .post(function (req, res) {
             console.log(req.form);
@@ -182,6 +201,64 @@ let userRouters = function userRouters(router) {
             });
         });
 
+    router.route('/id/:user_id')
+        .get(function (req, res) {
+            return userController.findUserById(req.params.user_id, function (err, user) {
+                if(err) return res.status(404).send(err);
+                else {
+                    res.status(200).send(user);
+                }
+            })
+        });
+
+    router.route('/uploadUserPic')
+        .post(auth, function (req, res) {
+            let storage = multer.diskStorage({
+                destination: 'D:/Users/jngue/WebstormProjects/Qwirk/app/assets/img'
+            });
+            let upload = multer({
+                storage: storage
+            }).any();
+
+            upload(req, res, function(err) {
+                if (err) {
+                    console.log(err);
+                    return res.end('Error');
+                } else {
+                    console.log('body : ', req.body);
+                    req.files.forEach(function(item) {
+                        console.log('Item : ', item);
+                        // move your file to destination
+                        return userController.setUserProfile(req, res, item, function (err, user) {
+                            if(err) return res.status(500).send(err);
+                            if(typeof user === "string") return res.status(500).send(user);
+                            res.status(200).send("Success");
+                        })
+                    });
+                    res.end('File uploaded');
+                }
+            });
+            console.log(req);
+            res.status(200).send("Success");
+           /*return userController.setUserProfile(req, res, function (err, user) {
+               if(err) return res.status(500).send(err);
+               if(typeof user === "string") return res.status(500).send(user);
+               res.status(200).send("Success");
+           })*/
+        });
+
+    router.route('/userContact/:email')
+        .get(function (req, res) {
+            return userController.findUserByEmail(req.params.email, function (err, user) {
+                if(err) return res.status(404).send(err);
+                else {
+                    res.status(200).send(user);
+                }
+            })
+        });
+
+    router.route('/')
+
     router.route('/login')
         .post(function(req, res) {
             return authenticationController.login(req, res);
@@ -189,7 +266,6 @@ let userRouters = function userRouters(router) {
 
     router.route('/register')
         .post(function (req, res) {
-            console.log("Test register route : ", req.body);
             return authenticationController.register(req, res);
         });
 
@@ -197,12 +273,10 @@ let userRouters = function userRouters(router) {
         .post(function (req, res, next) {
             return restorePassController.forgot(req, res, next);
         });
-
     router.route('/reset')
         .post(function (req, res) {
             return restorePassController.changePasswordUser(req, res);
         });
-
     router.route('/reset/:token')
         .get(function (req, res) {
             return restorePassController.reset(req, res);
@@ -224,6 +298,18 @@ let userRouters = function userRouters(router) {
             console.log(err, result);
             if(err) res.status(500).send(err);
             res.status(200).send(result);
+        })
+    });
+
+    router.put('/update/peer', function (req, res) {
+        console.log('Receive request : ', req.body);
+        return callController.updateUserPeerId(req.body, function (err, user) {
+            console.log('user peer id updated : ', user);
+            if(err) res.status(500).send(err);
+            else {
+                console.log('user peer id  is : ', user.peerId);
+                res.status(200).send(user.peerId);
+            }
         })
     })
 };

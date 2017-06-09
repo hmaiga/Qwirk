@@ -3,14 +3,17 @@
  */
 
 let userController = require('./../user');
-let groupController = require('./../group')
-let lugController = require('./../linkUserGroup')
+let groupController = require('./../group');
+let lugController = require('./../linkUserGroup');
+let messageController = require('./../../controllers').message;
 
 class NotificationGroupHandler {
     
     constructor(io) {
-       this.io = io;
-       this.groupNamespace = this.io.of('/groupSocket')
+           this.io = io;
+       this.groupNamespace = this.io.of('/groupSocket');
+       this.roomsName = [];
+       this.roomName = "";
     }
     
     init() {
@@ -19,12 +22,12 @@ class NotificationGroupHandler {
         })
         let self = this
         this.groupNamespace.on('connection', function(socket) {
-            self.createGroupRoom(socket)
+            self.createGroupRoom(socket);
             self.joinGroupsRooms(socket);
             self.joinGroupRoom(socket);
-            self.inviteUserToRoom(socket)
+            self.bindUserToActualRoom(socket);
+            self.inviteUserToRoom(socket);
             self.getInvites(socket);
-            // self.test(socket);
         })
     }
 
@@ -44,6 +47,7 @@ class NotificationGroupHandler {
                 else {
                     self.connectedUser = userFound;
                     for (let group of userFound.groups) {
+                        console.log("Everybody lookup", group);
                         socket.join(group);
                     }
                 }
@@ -97,6 +101,24 @@ class NotificationGroupHandler {
         })
     }
 
+    bindUserToActualRoom(socket) {
+        let self = this;
+        socket.on('room', function(userBindGroup) {
+            socket.join(userBindGroup.room);
+            socket.room = userBindGroup.room;
+            socket.user = userBindGroup.user;
+
+            self.roomsName[userBindGroup.user] = userBindGroup.room;
+            self.roomName = userBindGroup.room;
+            console.log("Bind User to Actual Room", self.roomsName);
+            self.onMessageToRoom(socket);
+            self.sendMessageToOthers(socket)
+
+            self.onNotification(socket);
+            self.updateMessageStatus(socket);
+        })
+    }
+
     inviteUserToRoom(socket) {
         let self = this
         socket.on('invitationToUser', function (invitation) {           //invitation = { group: {}, initiator: '127', targets: [{}]}
@@ -117,26 +139,84 @@ class NotificationGroupHandler {
     }
     
     getInvites(socket) {
-        let self = this
+        let self = this;
         socket.on('getInvites', function (userId) {
             lugController.getPendingInvitesFromUser({user_id : userId}, function (err, invites) {
                 if (err) socket.emit(userId, err)
                 else {
                     console.log('USERID : ', userId, typeof userId)
-                    // socket.join(userId)
-                    // self.emitMessageToAll(socket, 'test', invites, userId);
-                    socket.emit('test', 'test')
+                    socket.join(userId)
+                    self.emitMessageToAll(socket, userId, invites, userId);
                     console.log('SENT INVITES')
                 }
             })
         })
     }
 
-    // test(socket) {
-    //     socket.on('test', function(data) {
-    //         console.log(data)
-    //     })
-    // }
+    socketEmitterOnNsp(socket, event, message) {
+        //console.log(this.io.sockets);
+        this.io.sockets.emit(event, message);
+    }
+
+    onMessageToRoom(socket) {
+        let self = this;
+        console.log('toto : ', self.roomsName[socket.user]);
+        socket.on(self.roomsName[socket.user], function (text) {
+            self.socketId = socket.id;
+            console.log('On Message to room', self.roomsName, self.socketId, text);
+            //self.rabbitMqPub(text);
+
+            //let message = new messageModel(text);
+            console.log('RabbitMQ Publisher', self.roomName, text);
+            text.messageStatus.status = 'sent';
+            messageController.addMessage(text, function (err, result) {
+                if(err) console.error(err);
+                else {
+                    userController.findUserById(result.sender, function (err, res) {
+                        if (err) console.error(err);
+                        else {
+                            result.sender = res;
+                            console.log("On message to room : ",self.roomsName[result.sender._id]);
+                            self.emitMessageToOther(socket, self.roomsName[result.sender._id], result, self.roomsName[result.sender._id]);
+                            self.socketEmitterOnNsp(socket, "newGroupMessage", result);
+                        }
+                    })
+                }
+            })
+        })
+    }
+
+    sendMessageToOthers(socket) {
+        let self = this;
+        socket.on(self.roomsName[socket.user] + "sleep", function (text) {
+            console.log("On message to room : ",self.roomsName[text.sender]);
+            self.emitMessageToAll(socket, self.roomsName[text.sender], self.roomsName[text.sender], text);
+            //self.socketEmitterOnNsp(socket, "newMessage", result);
+        })
+    }
+
+    onNotification(socket) {
+        let self = this;
+        console.log('isTyping binding event');
+        socket.on('isTyping', function (text) {
+            console.log('isTyping emitting to client', socket.user);
+            self.emitMessageToOther(socket, self.roomsName[socket.user], text, 'isTyping');
+        })
+    }
+
+    updateMessageStatus(socket) {
+        let self = this;
+        socket.on("updateStatus", function (message) {
+            //console.log("T'm in update status");
+            messageController.updateMessageStatus(message, function (err, message) {
+                console.log("T'm in update status", message);
+                if(err) console.log(err);
+                else {
+                    self.emitMessageToAll(socket, self.roomsName[socket.user], message, "updateStatus");
+                }
+            });
+        })
+    }
 
 }
 
