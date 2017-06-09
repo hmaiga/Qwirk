@@ -16,6 +16,6 @@ module.exports = {
     profile: require('./profile'),
     contact: require('./contact'),
     call: require('./call'),
-    FileController: require('./fileController')
+    FileController: require('./fileController'),
     linkUserGroup: require('./linkUserGroup')
 };
