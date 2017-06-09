@@ -120,7 +120,7 @@ let notificationGroupHandler = new NotificationHandler(io);
 notificationGroupHandler.init();
 
 for (let route in initRouters) {
-    initRouters[route](router, app, messageHandler.getSocket());
+    initRouters[route](router, app);
 }
 
 app.use(cors());

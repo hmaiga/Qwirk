@@ -89,6 +89,7 @@ class MessageHandler {
             }
             self.rabbiMqBindSub(socket);
             self.onMessageToRoom(socket);
+            self.sendMessageToOthers(socket)
             self.onNotification(socket);
             self.updateMessageStatus(socket);
             self.roomsName[userRoom.user] = userRoom.room;
@@ -170,6 +171,15 @@ class MessageHandler {
                     self.socketEmitterOnNsp(socket, "newMessage", result);
                 }
             })
+        })
+    }
+
+    sendMessageToOthers(socket) {
+        let self = this;
+        socket.on(self.roomsName[socket.user] + "sleep", function (text) {
+            console.log("On message to room : ",self.roomsName[text.sender]);
+            self.socketEmitter(socket, self.roomsName[text.sender], self.roomsName[text.sender], text);
+            self.socketEmitterOnNsp(socket, "newMessage", text);
         })
     }
 
