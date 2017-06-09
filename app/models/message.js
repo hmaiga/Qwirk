@@ -30,7 +30,10 @@ var messageSchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: 'TypeMessage'
         },
-        media: Buffer,
+        media: {
+            filename : String,
+            contentType : String
+        },
         content: String,
         contact : {
             type : Schema.Types.ObjectId,

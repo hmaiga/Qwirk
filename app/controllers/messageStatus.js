@@ -2,7 +2,7 @@
  * Created by TBS on 26/02/2017.
  */
 let messageStatusModel = require('./../models').messageStatus
-let MESSAGE_STATUSES = require('./Utils/global_variables');
+let MESSAGE_STATUSES = require('./Utils/global_variables').MESSAGE_STATUSES;
 
 let messageStatusController = {
     addMessageStatus: function addMessageStatus(params, callback) {
@@ -71,8 +71,14 @@ let messageStatusController = {
         })
     },
     findStatusByName : function (status, callback) {
-        console.log('Is find baby');
+        console.log('Is find baby', status);
         return messageStatusModel.findOne({"status" : status}, function (err, result) {
+            (err) ? callback(err)
+                : callback(null, result);
+        })
+    },
+    findStatusById : function (id, callback) {
+        return messageStatusModel.findById(id, function (err, result) {
             (err) ? callback(err)
                 : callback(null, result);
         })

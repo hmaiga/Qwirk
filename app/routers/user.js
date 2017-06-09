@@ -28,8 +28,8 @@ let callController = require('./../controllers').call;
 let userRouters = function userRouters(router) {
     router.route('/users')
         .get(function(req, res) {
-            params = req.query.filter ? JSON.parse(req.query.filter) : {};
-            return userController.getUsers(params, function(err, users) {
+            // params = req.query.filter ? JSON.parse(req.query.filter) : {};
+            return userController.getUsers(req.params, function(err, users) {
                 if (err) {
                     return res.status(500).send(err)
                 }
@@ -55,9 +55,7 @@ let userRouters = function userRouters(router) {
         })
 
         .put(function(req, res) {
-            //console.log("PUT Test Router params: ", req.body)
             return userController.updateUser(req.body, function(err, updatedUser) {
-                //console.log("PUT Test Router params: ", updatedUser)
                 if (err) return res.status(500).send(err);
                 else {
                     res.status(200).send(updatedUser);
@@ -172,7 +170,6 @@ let userRouters = function userRouters(router) {
                 res.status(200).send("Success");
             })
         });
-
     router.route('/user/:username')
         .post(function (req, res) {
             console.log(req.form);
@@ -216,10 +213,10 @@ let userRouters = function userRouters(router) {
 
     router.route('/uploadUserPic')
         .post(auth, function (req, res) {
-            var storage = multer.diskStorage({
+            let storage = multer.diskStorage({
                 destination: 'D:/Users/jngue/WebstormProjects/Qwirk/app/assets/img'
             });
-            var upload = multer({
+            let upload = multer({
                 storage: storage
             }).any();
 
@@ -260,15 +257,15 @@ let userRouters = function userRouters(router) {
             })
         });
 
+    router.route('/')
+
     router.route('/login')
         .post(function(req, res) {
-            console.log('login : ', req);
             return authenticationController.login(req, res);
         });
 
     router.route('/register')
         .post(function (req, res) {
-            console.log("Test register route : ", req.body);
             return authenticationController.register(req, res);
         });
 
@@ -276,12 +273,10 @@ let userRouters = function userRouters(router) {
         .post(function (req, res, next) {
             return restorePassController.forgot(req, res, next);
         });
-
     router.route('/reset')
         .post(function (req, res) {
             return restorePassController.changePasswordUser(req, res);
         });
-
     router.route('/reset/:token')
         .get(function (req, res) {
             return restorePassController.reset(req, res);
@@ -299,7 +294,6 @@ let userRouters = function userRouters(router) {
         })
     });
     router.put('/update', auth, function (req, res) {
-        console.log('Receive request : ', req.body);
         return authenticationController.updateUserAccount(req, res, function (err, result) {
             console.log(err, result);
             if(err) res.status(500).send(err);

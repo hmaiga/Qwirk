@@ -5,4 +5,26 @@ let MESSAGE_STATUSES = [
   {"status" : "seen"}
 ];
 
-module.exports = MESSAGE_STATUSES;
+let USER_STATUSES = [
+    {
+        name : "Online",
+        color : "green"
+    },
+    {
+        name : "Busy",
+        color : 'red'
+    },
+    {
+        name : "Away",
+        color : "orange"
+    },
+    {
+        name : "Offline",
+        color : "black"
+    }
+]
+
+module.exports = {
+    MESSAGE_STATUSES : MESSAGE_STATUSES,
+    USER_STATUSES : USER_STATUSES
+};

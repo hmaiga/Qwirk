@@ -26,9 +26,7 @@ class authentication {
                 let user = new User();
 
                 logger.debug(status);
-                //Todo : Change hard coded image path in order to avoid error
-                //let imgPath = path.join(__dirname, 'assets/img/qwirk.jpg');
-                let imgPath = 'D:/Users/Supinfo/4PJT/Sources/Qwirk/app/assets/img/qwirk.jpg';
+                let imgPath = path.join(__dirname, '..', 'assets', 'img', 'qwirk.jpg');
                 user.firstName = req.body.firstName;
                 user.lastName = req.body.lastName;
                 user.email = req.body.email;

@@ -29,7 +29,6 @@ var userController = {
         return userModel.find(params, function onGetUsers(err, arrayUsers) {
             if (err) return callback(err)
             else {
-                console.log("callback type : ", typeof callback);
                 return callback(null, arrayUsers)
             }
         })
@@ -37,7 +36,6 @@ var userController = {
 
     updateUser: function updateUser(params, callback) {
         userModel.findOne({_id : params._id}, function(err, userFound) {
-            console.log("Test ctrl userFound: ", userFound)
             if (err) return callback(err)
             if (!userFound) return callback("Aucun utilisateur n'a été trouvé")
             else {
@@ -58,7 +56,7 @@ var userController = {
         })
 
     },
-    
+
     // getUserContacts: function (params, callback) {
     //     console.log("Test params ", params);
     //     return userModel.findById( params, function (err, userContacts) {

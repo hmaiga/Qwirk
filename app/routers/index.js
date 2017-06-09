@@ -22,5 +22,6 @@ module.exports = {
     moderator: require('./moderator'),
     setting: require('./setting'),
     status: require('./status'),
-    typeMessage: require('./typeMessage')
+    typeMessage: require('./typeMessage'),
+    linkUserGroup: require('./linkUserGroup')
 }
