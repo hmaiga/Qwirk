@@ -8,10 +8,6 @@
     "type": "git",
     "url": "git@github.com:housseinimaiga/Qwirk.git"
   },
-  "engines": {
-    "node": "6",
-    "npm": "3"
-  },
   "scripts": {
     "start": "SET DEBUG=worker,app&&node index.js"
   },
@@ -19,6 +15,10 @@
     "Messenger",
     "Qwirk"
   ],
+  "engines": {
+    "node": "6.7.0",
+    "npm": "4.3.0"
+  },
   "dependencies": {
     "amqp": "^0.2.6",
     "amqplib": "^0.5.1",
@@ -52,6 +52,7 @@
     "passport-local": "^1.0.0",
     "passport-remember-me": "0.0.1",
     "path": "^0.12.7",
+    "peer": "^0.2.8",
     "q": "^1.5.0",
     "request": "^2.79.0",
     "shortid": "^2.2.8",

@@ -1,0 +1,5 @@
+---
+applications:
+- name: qwirk
+  memory: 256M
+  command: node index.js
