@@ -35,7 +35,7 @@ var linkUserGroupController = {
                     var newLink = new linkUserGroupModel({group: group._id, user: group.members[user]._id, isPending: true, isKicked: false, isBanned: false, isAccepted: false })
                     if(group.members.length === parseInt(user) + 1) {
                         newLink.save(function onSaveLink(err) {
-                            console.log(group.data.members[user]._id)
+                            console.log(group.members[user]._id)
                             if (err) {
                                 return callback(err)
                             }
