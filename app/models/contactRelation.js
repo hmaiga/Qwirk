@@ -17,6 +17,14 @@ let contactRelationSchema = new Schema(
         isPending: {
             type: Boolean
         },
+        userEmail: {
+            type: String,
+            unique: false
+        },
+        userContactEmail: {
+            type: String,
+            unique: false
+        },
         token: {
             type: String
         },

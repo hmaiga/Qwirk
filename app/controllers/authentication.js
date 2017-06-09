@@ -4,6 +4,7 @@
 let passport = require('passport');
 let mongoose = require('mongoose');
 let fs = require('fs');
+let path = require('path');
 let mime = require('mime');
 let User = require('./../models').user;
 let Status = mongoose.model('Status');
@@ -25,8 +26,7 @@ class authentication {
                 let user = new User();
 
                 logger.debug(status);
-                //Todo : Change hard coded image path in order to avoid error
-                let imgPath = 'D:/Users/Supinfo/4PJT/Sources/Qwirk/app/assets/img/qwirk.jpg';
+                let imgPath = path.join(__dirname, '..', 'assets', 'img', 'qwirk.jpg');
                 user.firstName = req.body.firstName;
                 user.lastName = req.body.lastName;
                 user.email = req.body.email;
@@ -45,7 +45,7 @@ class authentication {
                 user.profilePicture.data = fs.readFileSync(imgPath);
                 user.profilePicture.contentType = mime.lookup(imgPath);
 
-                user.save(function(err) {
+                user.save(function(err, u) {
                     let token;
                     if (err) {
                         console.log(err);
@@ -56,7 +56,8 @@ class authentication {
                     token = user.generateJwt();
                     res.status(200);
                     res.json({
-                        "token" : token
+                        "token" : token,
+                        "user_id" : u._id
                     });
                 });
             }], function (err) {
@@ -81,7 +82,8 @@ class authentication {
                 token = user.generateJwt();
                 res.status(200);
                 res.json({
-                    "token" : token
+                    "token" : token,
+                    "user_id" : user._id
                 });
             } else {
                 // If user is not found

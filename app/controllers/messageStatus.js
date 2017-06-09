@@ -1,13 +1,13 @@
 /**
  * Created by TBS on 26/02/2017.
  */
-var messageStatusModel = require('./../models').messageStatus
-let MESSAGE_STATUSES = require('./Utils/global_variables');
+let messageStatusModel = require('./../models').messageStatus
+let MESSAGE_STATUSES = require('./Utils/global_variables').MESSAGE_STATUSES;
 
-var messageStatusController = {
+let messageStatusController = {
     addMessageStatus: function addMessageStatus(params, callback) {
         console.log(params, new messageStatusModel(params));
-        var newMessageStatus = new messageStatusModel(params)
+        let newMessageStatus = new messageStatusModel(params)
         return newMessageStatus.save(function onSaveMessageStatus(err, savedMessage) {
             if (err) return callback(err)
             else {
@@ -30,7 +30,7 @@ var messageStatusController = {
             if (err) return callback(err)
             if (!messageStatusFound) return callback("Aucun status de message n'a été trouvé")
             else {
-                for(var key in params) {
+                for(let key in params) {
                     if (key === '_id') {continue;}
                     if (messageStatusFound[key]) {
                         messageStatusFound[key] = params[key];
@@ -68,6 +68,19 @@ var messageStatusController = {
             else {
                 callback(new Error("Already in database"));
             }
+        })
+    },
+    findStatusByName : function (status, callback) {
+        console.log('Is find baby', status);
+        return messageStatusModel.findOne({"status" : status}, function (err, result) {
+            (err) ? callback(err)
+                : callback(null, result);
+        })
+    },
+    findStatusById : function (id, callback) {
+        return messageStatusModel.findById(id, function (err, result) {
+            (err) ? callback(err)
+                : callback(null, result);
         })
     }
 }

@@ -6,6 +6,8 @@ let helper = require('./../helpers/helper');
 var userModel = require('./../models').user;
 var contactModel = require('./../models').contact;
 
+let fs = require('fs');
+
 var userController = {
     addUser: function addUser(params, callback) {
         console.log("Test Controller : ", params)
@@ -27,7 +29,6 @@ var userController = {
         return userModel.find(params, function onGetUsers(err, arrayUsers) {
             if (err) return callback(err)
             else {
-                console.log("callback type : ", typeof callback);
                 return callback(null, arrayUsers)
             }
         })
@@ -35,7 +36,6 @@ var userController = {
 
     updateUser: function updateUser(params, callback) {
         userModel.findOne({_id : params._id}, function(err, userFound) {
-            console.log("Test ctrl userFound: ", userFound)
             if (err) return callback(err)
             if (!userFound) return callback("Aucun utilisateur n'a été trouvé")
             else {
@@ -56,7 +56,7 @@ var userController = {
         })
 
     },
-    
+
     // getUserContacts: function (params, callback) {
     //     console.log("Test params ", params);
     //     return userModel.findById( params, function (err, userContacts) {
@@ -164,6 +164,16 @@ var userController = {
         })
     },
 
+    findUserByEmail : function (email, callback) {
+        return userModel.findOne({email : email}, function (err, user) {
+            if(err) return callback(err);
+            if(!user) return callback ('User doesn\'t exist')
+            else {
+                return callback(null, user);
+            }
+        })
+    },
+
     getUserProfile : function (userIdentifier,res, callback) {
         let object = {};
         if (helper.validateEmail(userIdentifier)) {
@@ -182,8 +192,17 @@ var userController = {
         })
     },
 
-    setUserProfile : function (req, res, done) {
-
+    setUserProfile : function (req, res, file, done) {
+        let data = fs.readFileSync(file.path);
+        console.log("Set User Profile Init", data)
+        return userModel.findByIdAndUpdate(req.payload._id, {profilePicture : {data : data, contentType : file.mimetype}}, function (err, user) {
+            if (err) return callback(err.json());
+            if (!user) return callback("Aucun utilisateur n'a été trouvé");
+            let userJson = user.toJSON();
+            if(!userJson.profilePicture) return callback('User does not have a user profile');
+            res.contentType(user.profilePicture.contentType);
+            res.send(user.profilePicture.data);
+        })
     }
 };
 

@@ -11,6 +11,7 @@ let express = require('express');
 let session = require('express-session');
 let cors = require('cors');
 let mongoose = require('mongoose');
+var Grid = require('gridfs-stream');
 let winston = require('winston');
 let bodyParser = require('body-parser');
 let cookieParser = require('cookie-parser');
@@ -33,6 +34,7 @@ let configDB = config.database;
 let apiPort = config.infra['qwirk-api'].port;
 let MessageHandler = require('./app/controllers/Utils/messageHandler');
 
+let NotificationHandler = require('./app/controllers/Utils/notificationGroupHandler');
 
 /*********************************************
  *              Db connection                *
@@ -43,6 +45,8 @@ let sessionStore = new MongoStore({
     collection: 'sessions'
 });
 
+Grid.mongo = mongoose.mongo;
+
 mongoose.connect(configDB.uri, configDB.options);
 
 let conn = mongoose.connection;
@@ -52,6 +56,8 @@ conn.on('error', function onError(err){
 });
 
 conn.once('open', function onOpen(){
+    let gfs = Grid(conn.db);
+    app.set('gridfs', gfs);
     debug('Mongoose connected');
 });
 
@@ -100,12 +106,22 @@ passport.deserializeUser(function(id, done) {
 
 let app = express();
 
-for (let route in initRouters) {
-    initRouters[route](router);
-}
 
 let server = http.createServer(app);
 let io = require('socket.io')(server);
+let ss = require('socket.io-stream');
+
+let messageHandler = new MessageHandler(io, ss);
+messageHandler.init();
+
+// Quand un client se connecte, on le note dans la console
+
+let notificationGroupHandler = new NotificationHandler(io);
+notificationGroupHandler.init();
+
+for (let route in initRouters) {
+    initRouters[route](router, app);
+}
 
 app.use(cors());
 logger.debug("Overriding 'Express' logger");
@@ -132,9 +148,6 @@ app.use(function (err, req, res, next) {
         res.json({"message" : err.name + ": " + err.message});
     }
 });
-
-let messageHandler = new MessageHandler(io);
-messageHandler.init();
 
 server.listen(apiPort, function listening(){
     debug_w('Express server listening on port ' + apiPort);
