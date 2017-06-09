@@ -23,7 +23,8 @@ class NotificationGroupHandler {
             self.joinGroupsRooms(socket);
             self.joinGroupRoom(socket);
             self.inviteUserToRoom(socket)
-            self.getInvites(socket)
+            self.getInvites(socket);
+            // self.test(socket);
         })
     }
 
@@ -122,13 +123,20 @@ class NotificationGroupHandler {
                 if (err) socket.emit(userId, err)
                 else {
                     console.log('USERID : ', userId, typeof userId)
-                    socket.join(userId)
-                    self.emitMessageToAll(socket, userId, invites, userId);
+                    // socket.join(userId)
+                    // self.emitMessageToAll(socket, 'test', invites, userId);
+                    socket.emit('test', 'test')
                     console.log('SENT INVITES')
                 }
             })
         })
     }
+
+    // test(socket) {
+    //     socket.on('test', function(data) {
+    //         console.log(data)
+    //     })
+    // }
 
 }
 
