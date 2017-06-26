@@ -64,7 +64,7 @@ var messageRouters = function messageRouters(router, app) {
 
     router.route('/uploadMessage')
         .post(auth, function (req, res) {
-            //console.log('req : ', req.files);
+            console.log('req : ', req.files);
             let storage = multer.diskStorage({
                 destination: path.join(__dirname, '..', 'assets', 'file')
             });
@@ -79,7 +79,7 @@ var messageRouters = function messageRouters(router, app) {
                     console.log(err);
                     return res.end('Error');
                 } else {
-                    //console.log('body : ', req.body);
+                    console.log('body : ', req.body);
                     req.files.forEach(function(item) {
                         console.log('Item : ', item);
                         //move your file to destination

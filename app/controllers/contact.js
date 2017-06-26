@@ -196,7 +196,7 @@ class contactController {
     }
 
     static renameUserContact(req, callback) {
-        console.log("Test params ", req.payload._id);
+        console.log("Test params ", req.body);
         async.waterfall([
             function (done) {
                 ContactRelation.findOne({$and : [{userEmail : req.payload.email}, {userContactEmail : req.body.contactemail}]}, function (err, user) {
@@ -223,6 +223,49 @@ class contactController {
             }
         ], function (err, success) {
             if(err) {
+                return callback(err);
+            }
+            callback(null, success);
+        });
+    }
+
+    static acceptInvitationContact(req, callback) {
+
+        console.log('Accept invitation : ', req.body);
+        ContactRelation.findOneAndUpdate({$and : [{userEmail : req.body.contactemail}, {userContactEmail : req.payload.email}]}, {isPending : false}, function (err, user) {
+            if(err) callback(err);
+            else {
+                console.log('User : ', user.user);
+                callback(null, user.user);
+            }
+        });
+    }
+
+    static refuseInvitationContact(req, callback) {
+        async.waterfall([
+            function (done) {
+                ContactRelation.findOne({$and : [{userEmail : req.body.contactemail}, {userContactEmail : req.payload.email}]}, function (err, user) {
+                    if(err) callback(err);
+                    else {
+                        console.log('User : ', user.userContact);
+                        done(null, user.userContact);
+                    }
+                })
+            },
+            function (contactId, done) {
+                Contact.findByIdAndUpdate(contactId,  {isRefuse : true}, function (err, user) {
+                    console.log("findOneAndUpdate test ", user);
+                    console.log("callback : ");
+                    if(!user) return done('Cannot rename an invalid contact');
+                    else{
+                        console.log("Test else statement", user);
+                        return  done(null, user);
+                    }
+                })
+            }
+        ], function (err, success) {
+            if(err) {
+                console.log(err.json());
                 return callback(err);
             }
             callback(null, success);

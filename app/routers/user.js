@@ -107,7 +107,7 @@ let userRouters = function userRouters(router) {
                 if(err) return res.status(500).send(err);
                 else {
                     console.log("3 post Test Router '/contact' : Success", userContacts);
-                    res.status(400).send(userContacts);
+                    res.status(200).send(userContacts);
                 }
             })
         })
@@ -154,6 +154,31 @@ let userRouters = function userRouters(router) {
     .put(auth, function (req, res) {
         console.log("1 PUT Test Router /contact/block", req.body);
         contactController.blockContact(req, function (err, contact) {
+                //console.log("2 PUT Test Router /contact/block", req.body);
+                if(err) return res.status(500).send(err);
+                else {
+                    res.status(200).send(contact);
+                }
+            })
+        });
+
+
+    router.route('/contact/accept')
+        .put(auth, function (req, res) {
+            console.log("1 PUT Test Router /contact/accept", req.body);
+            contactController.acceptInvitationContact(req, function (err, contactRel) {
+                //console.log("2 PUT Test Router /contact/block", req.body);
+                if(err) return res.status(500).send(err);
+                else {
+                    res.status(200).send(contactRel);
+                }
+            })
+        });
+
+    router.route('/contact/refuse')
+        .put(auth, function (req, res) {
+            console.log("1 PUT Test Router /contact/refuse", req.body);
+            contactController.refuseInvitationContact(req, function (err, contact) {
                 //console.log("2 PUT Test Router /contact/block", req.body);
                 if(err) return res.status(500).send(err);
                 else {

@@ -110,7 +110,7 @@ let app = express();
 
 
 let server = http.createServer(app);
-let io = require('socket.io')(server);
+let io = require('socket.io')(server, {'transports': ['websocket', 'polling']});
 let ss = require('socket.io-stream');
 
 let messageHandler = new MessageHandler(io, ss);

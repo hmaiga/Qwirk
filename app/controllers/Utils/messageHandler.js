@@ -29,7 +29,7 @@ class MessageHandler {
     init() {
         console.log("Init socket io");
         this.rabbitMqInit();
-        this.io.on('connection', function (result) { 
+        this.io.on('connection', function (result) {
             console.log("Init socket io nsp : /");
         });
         this.initContact();
@@ -77,7 +77,7 @@ class MessageHandler {
             //console.log('Bind room join', userRoom);
             //socket.disconnect();
             //self.leaveAllRooms(socket);
-            //console.log('Join room success', userRoom.room, userRoom.user);
+            console.log('Join room success', userRoom);
             socket.join(userRoom.room);
             socket.room = userRoom.room;
             socket.user = userRoom.user;
